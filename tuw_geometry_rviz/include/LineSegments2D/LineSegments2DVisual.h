@@ -47,7 +47,7 @@ namespace rviz
 class BillboardLine;
 }
 
-namespace tuw_geometry_rviz_plugin
+namespace tuw_geometry_rviz
 {
 
 // Declare the visual class for this display.

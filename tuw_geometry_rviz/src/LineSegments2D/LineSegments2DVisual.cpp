@@ -36,7 +36,7 @@
 
 #include "LineSegments2D/LineSegments2DVisual.h"
 
-namespace tuw_geometry_rviz_plugin
+namespace tuw_geometry_rviz
 {
 LineSegments2DVisual::LineSegments2DVisual(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node)
 {

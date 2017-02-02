@@ -40,7 +40,7 @@
 #include "LineSegments2D/LineSegments2DDisplay.h"
 #include "LineSegments2D/LineSegments2DVisual.h"
 
-namespace tuw_geometry_rviz_plugin
+namespace tuw_geometry_rviz
 {
 // The constructor must have no arguments, so we can't give the
 // constructor the parameters it needs to fully initialize.
@@ -134,4 +134,4 @@ void LineSegments2DDisplay::processMessage(const tuw_geometry_msgs::LineSegments
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(tuw_geometry_rviz_plugin::LineSegments2DDisplay, rviz::Display)
+PLUGINLIB_EXPORT_CLASS(tuw_geometry_rviz::LineSegments2DDisplay, rviz::Display)

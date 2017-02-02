@@ -48,7 +48,7 @@ class FloatProperty;
 
 // All the source in this plugin is in its own namespace.  This is not
 // required but is good practice.
-namespace tuw_geometry_rviz_plugin
+namespace tuw_geometry_rviz
 {
 
 class LineSegments2DVisual;
