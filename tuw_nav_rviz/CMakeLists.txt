@@ -161,6 +161,9 @@ add_library(${PROJECT_NAME}
   include/Path/PathDisplay.h
   src/Path/PathVisual.cpp
   src/Path/PathDisplay.cpp
+  
+  include/PathVec/PathVecDisplay.h
+  src/PathVec/PathVecDisplay.cpp
 )
 
 ## Specify libraries to link a library or executable target against
