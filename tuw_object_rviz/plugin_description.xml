@@ -1,0 +1,11 @@
+<library path="lib/libtuw_object_rviz">
+  <class name="tuw_object_rviz/ObjectDetection"
+         type="tuw_object_rviz::ObjectDetectionDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Display detected Objects
+    </description>
+    <message_type>tuw_object_msgs/ObjectDetection</message_type>
+  </class>
+</library>
+
