@@ -46,6 +46,7 @@ namespace rviz
 {
 class Arrow;
 class Shape;
+class Shape;
 }
 
 namespace tuw_object_rviz
@@ -92,9 +93,9 @@ public:
 private:
     // The object implementing the actual pose shape
     boost::shared_ptr<rviz::Arrow> pose_;
-
-    // The object implementing the actual variance shape
-    boost::shared_ptr<rviz::Shape> variance_;
+    
+    // the object implementing the center of the detection
+    boost::shared_ptr<rviz::Shape> mean_;
 
     boost::shared_ptr<CovarianceVisual> covariance_visual_;
 

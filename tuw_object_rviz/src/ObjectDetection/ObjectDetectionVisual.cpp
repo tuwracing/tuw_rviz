@@ -56,6 +56,7 @@ ObjectDetectionVisual::ObjectDetectionVisual(Ogre::SceneManager* scene_manager, 
   // set thier position and direction relative to their header frame.
   pose_.reset(new rviz::Arrow(scene_manager_, frame_node_));
   covariance_visual_.reset(new ProbabilityEllipseCovarianceVisual(scene_manager_, frame_node_));
+  mean_.reset(new rviz::Shape(rviz::Shape::Sphere, scene_manager_, frame_node_));
 }
 
 ObjectDetectionVisual::~ObjectDetectionVisual()
@@ -78,20 +79,12 @@ void ObjectDetectionVisual::setMessage(const tuw_object_msgs::ObjectWithCovarian
   Ogre::Matrix3 C = Ogre::Matrix3(msg->covariance_pose[0], msg->covariance_pose[1], msg->covariance_pose[2],
                                   msg->covariance_pose[3], msg->covariance_pose[4], msg->covariance_pose[5],
                                   msg->covariance_pose[6], msg->covariance_pose[7], msg->covariance_pose[8]);
-  
-  //position = Ogre::Vector3(0, 0, 0);
-  //orientation = Ogre::Quaternion(1, 0, 0, 0);
-  
+    
   // rotate covariance matrix in right coordinates
   // cov(Ax) = A * cov(x) * AT
   Ogre::Matrix3 rotation_mat;
   orientation_.ToRotationMatrix(rotation_mat);
   C = rotation_mat * C * rotation_mat.Transpose();
-  
-  //ROS_INFO("frame_rotation = (w=%f, x=%f, y=%f, z=%f)", frame_rotation.w, frame_rotation.x, frame_rotation.y, frame_rotation.z);
-  //ROS_INFO("frame_translation = (x=%f, y=%f, z=%f)", frame_translation.x, frame_translation.y, frame_translation.z);
-  
-  //ROS_INFO("person position = (x=%f, y=%f, z=%f)", position.x, position.y, position.z);
 
   Ogre::Matrix4 transf(orientation_);
   transf.setTrans(position_);
@@ -107,7 +100,14 @@ void ObjectDetectionVisual::setMessage(const tuw_object_msgs::ObjectWithCovarian
   
   pose_->setPosition(position);
   pose_->setDirection(vel);
-
+  
+  if(vel == Ogre::Vector3::ZERO)
+  {
+    pose_->getSceneNode()->flipVisibility();
+  }
+  
+  mean_->setPosition(position);
+  mean_->setScale(Ogre::Vector3(0.1, 0.1, 0.1));
 }
 
 // Position is passed through to the SceneNode.
@@ -136,6 +136,8 @@ void ObjectDetectionVisual::setTransformOrientation(const Ogre::Quaternion& orie
 void ObjectDetectionVisual::setScale(float scale)
 {
   pose_->setScale(Ogre::Vector3(scale, scale, scale));
+  mean_->setScale(Ogre::Vector3(scale, scale, scale));
+  covariance_visual_->setLineWidth(scale);
   scale_ = scale;
 }
 
@@ -143,6 +145,8 @@ void ObjectDetectionVisual::setScale(float scale)
 void ObjectDetectionVisual::setColor(Ogre::ColourValue color)
 {
   pose_->setColor(color);
+  mean_->setColor(color);
+  covariance_visual_->setColor(color);
   color_ = color;
 }
 
