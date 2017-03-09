@@ -35,7 +35,6 @@
 #include <OGRE/OgreSceneManager.h>
 
 #include "ObjectDetection/ObjectDetectionVisual.h"
-//#include <ObjectDetection/CovarianceVisual.h>
 
 namespace tuw_object_rviz
 {
@@ -55,8 +54,9 @@ ObjectDetectionVisual::ObjectDetectionVisual(Ogre::SceneManager* scene_manager, 
   // We create the visual objects within the frame node so that we can
   // set thier position and direction relative to their header frame.
   pose_.reset(new rviz::Arrow(scene_manager_, frame_node_));
-  covariance_visual_.reset(new ProbabilityEllipseCovarianceVisual(scene_manager_, frame_node_));
+  covariance_.reset(new ProbabilityEllipseCovarianceVisual(scene_manager_, frame_node_));
   mean_.reset(new rviz::Shape(rviz::Shape::Sphere, scene_manager_, frame_node_));
+  detection_id_.reset(new TextVisual(scene_manager_, frame_node_, Ogre::Vector3(0, 0, 0)));
 }
 
 ObjectDetectionVisual::~ObjectDetectionVisual()
@@ -68,14 +68,14 @@ ObjectDetectionVisual::~ObjectDetectionVisual()
 void ObjectDetectionVisual::setMessage(const tuw_object_msgs::ObjectWithCovariance::ConstPtr& msg)
 {
   Ogre::Vector3 position = Ogre::Vector3(msg->object.pose.position.x, msg->object.pose.position.y, msg->object.pose.position.z);
+  position = transform_ * position;
+  position.z = 0; // fix on ground z=0
   
   Ogre::Vector3 vel = Ogre::Vector3(msg->object.twist.linear.x, msg->object.twist.linear.y, msg->object.twist.linear.z);
   
   Ogre::Quaternion orientation = Ogre::Quaternion(msg->object.pose.orientation.w, msg->object.pose.orientation.x, msg->object.pose.orientation.y, msg->object.pose.orientation.z);
   
-  // only use yaw since person is flat on the ground
-  //orientation = Ogre::Quaternion(orientation.getRoll(), Ogre::Vector3(0,0,1));
-
+  covariance_->setVisible(true);
   Ogre::Matrix3 C = Ogre::Matrix3(msg->covariance_pose[0], msg->covariance_pose[1], msg->covariance_pose[2],
                                   msg->covariance_pose[3], msg->covariance_pose[4], msg->covariance_pose[5],
                                   msg->covariance_pose[6], msg->covariance_pose[7], msg->covariance_pose[8]);
@@ -83,31 +83,55 @@ void ObjectDetectionVisual::setMessage(const tuw_object_msgs::ObjectWithCovarian
   // rotate covariance matrix in right coordinates
   // cov(Ax) = A * cov(x) * AT
   Ogre::Matrix3 rotation_mat;
-  orientation_.ToRotationMatrix(rotation_mat);
+  transform_.extract3x3Matrix(rotation_mat);
   C = rotation_mat * C * rotation_mat.Transpose();
-
-  Ogre::Matrix4 transf(orientation_);
-  transf.setTrans(position_);
   
-  position = transf * position;
-  position.z = 0; // fix on ground z=0
-  
-  covariance_visual_->setOrientation(orientation);
-  covariance_visual_->setPosition(position);
-  covariance_visual_->setMeanCovariance(Ogre::Vector3(0, 0, 0), C);
-  Ogre::ColourValue color = Ogre::ColourValue(0, 1, 0, 1);
-  covariance_visual_->setColor(color);
+  covariance_->setOrientation(orientation);
+  covariance_->setPosition(position);
+  covariance_->setMeanCovariance(Ogre::Vector3(0, 0, 0), C);
   
   pose_->setPosition(position);
   pose_->setDirection(vel);
   
+  // only show arrow if velocity > 0 (in any direction)
   if(vel == Ogre::Vector3::ZERO)
   {
-    pose_->getSceneNode()->flipVisibility();
+    pose_->getSceneNode()->setVisible(false, true);
+  }
+  else
+  {
+    pose_->getSceneNode()->setVisible(true, true);
   }
   
   mean_->setPosition(position);
   mean_->setScale(Ogre::Vector3(0.1, 0.1, 0.1));
+  
+  detection_id_->setPosition(position - Ogre::Vector3(0, 0, 0.2));
+  detection_id_->setCharacterHeight(0.2);
+  
+  
+  // concatenate ids with confidences as string for display
+  // only first two decimal digits are displayed for confidences
+  std::string ids = "";
+  std::vector<int>::const_iterator it_ids = msg->object.ids.begin();
+  std::vector<double>::const_iterator it_conf = msg->object.ids_confidence.begin();
+  
+  for(; (it_ids != msg->object.ids.end()) || (it_conf != msg->object.ids_confidence.end()); it_ids++, it_conf++)
+  {
+    
+    std::string conf = (boost::format("%.2f") % *it_conf).str();
+    
+    if(it_ids == (msg->object.ids.end() - 1))
+    {
+      ids += boost::lexical_cast<std::string>(*it_ids) + " (" + conf + ")";
+    }
+    else
+    {
+      ids += boost::lexical_cast<std::string>(*it_ids) + " (" + conf + ")" + ", ";
+    }
+  }
+  
+  detection_id_->setCaption(ids);
 }
 
 // Position is passed through to the SceneNode.
@@ -122,14 +146,10 @@ void ObjectDetectionVisual::setFrameOrientation(const Ogre::Quaternion& orientat
   frame_node_->setOrientation(orientation);
 }
 
-void ObjectDetectionVisual::setTransformPosition(const Ogre::Vector3& position)
+void ObjectDetectionVisual::setTransform(const Ogre::Vector3& position, const Ogre::Quaternion& orientation)
 {
-  position_ = position;
-}
-
-void ObjectDetectionVisual::setTransformOrientation(const Ogre::Quaternion& orientation)
-{
-  orientation_ = orientation;
+  transform_ = Ogre::Matrix4(orientation);
+  transform_.setTrans(position);
 }
 
 // Scale is passed through to the pose Shape object.
@@ -137,7 +157,7 @@ void ObjectDetectionVisual::setScale(float scale)
 {
   pose_->setScale(Ogre::Vector3(scale, scale, scale));
   mean_->setScale(Ogre::Vector3(scale, scale, scale));
-  covariance_visual_->setLineWidth(scale);
+  covariance_->setLineWidth(scale);
   scale_ = scale;
 }
 
@@ -146,8 +166,15 @@ void ObjectDetectionVisual::setColor(Ogre::ColourValue color)
 {
   pose_->setColor(color);
   mean_->setColor(color);
-  covariance_visual_->setColor(color);
+  covariance_->setColor(color);
+  detection_id_->setColor(color);
   color_ = color;
+}
+
+void ObjectDetectionVisual::setVisiblities(bool render_covariance, bool render_id, bool render_sensor_type)
+{
+  covariance_->setVisible(render_covariance);
+  detection_id_->setVisible(render_id);
 }
 
 }  // end namespace marker_rviz

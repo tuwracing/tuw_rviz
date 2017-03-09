@@ -64,28 +64,26 @@ ObjectDetectionDisplay::ObjectDetectionDisplay()
 void ObjectDetectionDisplay::onInitialize()
 {
   MFDClass::onInitialize();
-  
+
   visual_.clear();
-  /*
-  boost::shared_ptr<ObjectDetectionVisual> init_visual;
-  init_visual.reset(new ObjectDetectionVisual(context_->getSceneManager(), scene_node_));
-  visual_.push_back(init_visual);*/
 
-  render_covariances_property =
+  render_covariances_property_ =
       new rviz::BoolProperty("Render covariances", true, "Render covariance ellipses", this, SLOT(stylesChanged()));
-  render_ids_property =
+      
+  render_ids_property_ =
       new rviz::BoolProperty("Render detection IDs", true, "Render IDs of the detection", this, SLOT(stylesChanged()));
-  render_ids_confidences_property =
-      new rviz::BoolProperty("Render confidences", false, "Render detection confidences", this, SLOT(stylesChanged()));
-
-  render_sensor_type_property =
+      
+  render_sensor_type_property_ =
       new rviz::BoolProperty("Render sensor type text", false,
                              "Render detection sensor type as text below detected object", this, SLOT(stylesChanged()));
+
+  color_property_ =
+      new rviz::ColorProperty("Color", Qt::black, "Color of detected object", this, SLOT(stylesChanged()));
 }
 
 ObjectDetectionDisplay::~ObjectDetectionDisplay()
 {
-  foreach(boost::shared_ptr<ObjectDetectionVisual>& object_detection_visual, visual_)
+  foreach (boost::shared_ptr<ObjectDetectionVisual>& object_detection_visual, visual_)
   {
     object_detection_visual.reset(new ObjectDetectionVisual(context_->getSceneManager(), scene_node_));
   }
@@ -99,16 +97,19 @@ void ObjectDetectionDisplay::reset()
 
 void ObjectDetectionDisplay::objectVisualTypeChanged()
 {
-  //visual_->
+  // visual_->
   stylesChanged();
 }
 
 void ObjectDetectionDisplay::stylesChanged()
 {
-  /*foreach(boost::shared_ptr<ObjectDetectionVisual>& object_detection_visual, visual_)
+  foreach (boost::shared_ptr<ObjectDetectionVisual>& object_detection_visual, visual_)
   {
-    
-  }*/
+    object_detection_visual->setColor(color_property_->getOgreColor());
+    object_detection_visual->setVisiblities(render_covariances_property_->getBool(), 
+                                            render_ids_property_->getBool(),
+                                            render_sensor_type_property_->getBool());
+  }
 }
 
 // This is our callback to handle an incoming message.
@@ -116,45 +117,46 @@ void ObjectDetectionDisplay::processMessage(const tuw_object_msgs::ObjectDetecti
 {
   // clear previous detections
   visual_.clear();
-  
-  // Now set or update the contents of the visual.
-  stylesChanged();
-  
-  for(std::vector<tuw_object_msgs::ObjectWithCovariance>::const_iterator detected_object_it = msg->objects.begin(); detected_object_it != msg->objects.end(); detected_object_it++)
+
+  for (std::vector<tuw_object_msgs::ObjectWithCovariance>::const_iterator detected_object_it = msg->objects.begin();
+       detected_object_it != msg->objects.end(); detected_object_it++)
   {
     // create new visual object
     boost::shared_ptr<ObjectDetectionVisual> detected_object_visual;
-    detected_object_visual = boost::shared_ptr<ObjectDetectionVisual>(new ObjectDetectionVisual(context_->getSceneManager(), scene_node_));
-    
-    tuw_object_msgs::ObjectWithCovarianceConstPtr detected_object = boost::shared_ptr<tuw_object_msgs::ObjectWithCovariance>(new tuw_object_msgs::ObjectWithCovariance(*detected_object_it));
-    
+    detected_object_visual =
+        boost::shared_ptr<ObjectDetectionVisual>(new ObjectDetectionVisual(context_->getSceneManager(), scene_node_));
+
+    tuw_object_msgs::ObjectWithCovarianceConstPtr detected_object =
+        boost::shared_ptr<tuw_object_msgs::ObjectWithCovariance>(
+            new tuw_object_msgs::ObjectWithCovariance(*detected_object_it));
+
     // Here we call the rviz::FrameManager to get the transform from the
     // fixed frame to the frame in the header of this Imu message.  If
     // it fails, we can't do anything else so we return.
     Ogre::Quaternion orientation;
     Ogre::Vector3 position;
-    
-    //ROS_INFO("msg frame id = %s", msg->header.frame_id.c_str());
+
+    // ROS_INFO("msg frame id = %s", msg->header.frame_id.c_str());
     if (!context_->getFrameManager()->getTransform(msg->header, position, orientation))
     {
       ROS_DEBUG("Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(),
                 qPrintable(fixed_frame_));
       return;
     }
-    //ROS_INFO("frame = %s", msg->header.frame_id.c_str());
-    //ROS_INFO("position = (x=%f, x=%f, x=%f), orientation = (w=%f, x=%f, y=%f, z=%f)", position.x, position.y, position.z, orientation.w, orientation.x, orientation.y, orientation.z);
-    
+
     // set frame position to origin of parent, then explicitly transform points in msg
     // the advantage of this is that one can treat every detected object the same
     // regardless of orientation of the coordinate system
     // e.g. z = 0 means on the ground for every detection
     detected_object_visual->setFramePosition(Ogre::Vector3(0, 0, 0));
     detected_object_visual->setFrameOrientation(Ogre::Quaternion(1, 0, 0, 0));
-    detected_object_visual->setTransformPosition(position);
-    detected_object_visual->setTransformOrientation(orientation);
+    detected_object_visual->setTransform(position, orientation);
     detected_object_visual->setMessage(detected_object);
-    
+
     visual_.push_back(detected_object_visual);
+
+    // Now set or update the contents of the visual.
+    stylesChanged();
   }
 }
 

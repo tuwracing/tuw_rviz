@@ -156,9 +156,11 @@ add_library(${PROJECT_NAME}
   include/ObjectDetection/ObjectDetectionVisual.h
   include/ObjectDetection/ObjectDetectionDisplay.h
   include/ObjectDetection/CovarianceVisual.h
+  include/ObjectDetection/TextVisual.h
   src/ObjectDetection/ObjectDetectionVisual.cpp
   src/ObjectDetection/ObjectDetectionDisplay.cpp
   src/ObjectDetection/CovarianceVisual.cpp
+  src/ObjectDetection/TextVisual.cpp
 )
 
 ## Add cmake target dependencies of the library

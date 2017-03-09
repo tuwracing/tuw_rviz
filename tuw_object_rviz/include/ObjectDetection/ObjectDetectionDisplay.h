@@ -46,6 +46,7 @@ namespace rviz
 {
 class ColorProperty;
 class FloatProperty;
+class BoolProperty;
 }
 
 // All the source in this plugin is in its own namespace.  This is not
@@ -91,10 +92,10 @@ private:
   std::vector<boost::shared_ptr<ObjectDetectionVisual> > visual_;
 
   // Properties
-  rviz::BoolProperty* render_covariances_property;
-  rviz::BoolProperty* render_ids_property;
-  rviz::BoolProperty* render_ids_confidences_property;
-  rviz::BoolProperty* render_sensor_type_property;
+  rviz::BoolProperty* render_covariances_property_;
+  rviz::BoolProperty* render_ids_property_;
+  rviz::BoolProperty* render_sensor_type_property_;
+  rviz::ColorProperty* color_property_;
 };
 
 } // end namespace tuw_object_rviz

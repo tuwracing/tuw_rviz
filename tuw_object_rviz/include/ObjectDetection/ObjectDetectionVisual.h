@@ -34,6 +34,7 @@
 #include <rviz/ogre_helpers/arrow.h>
 #include <rviz/ogre_helpers/shape.h>
 #include <ObjectDetection/CovarianceVisual.h>
+#include <ObjectDetection/TextVisual.h>
 
 namespace Ogre
 {
@@ -47,6 +48,7 @@ namespace rviz
 class Arrow;
 class Shape;
 class Shape;
+class MovableText;
 }
 
 namespace tuw_object_rviz
@@ -74,8 +76,8 @@ public:
     void setFramePosition ( const Ogre::Vector3& position );
     void setFrameOrientation ( const Ogre::Quaternion& orientation );
 
-    void setTransformPosition ( const Ogre::Vector3& position );
-    void setTransformOrientation ( const Ogre::Quaternion& orientation );
+    //void setTransformPosition ( const Ogre::Vector3& position );
+    //void setTransformOrientation ( const Ogre::Quaternion& orientation );
 
     void setTransform ( const Ogre::Vector3& position, const Ogre::Quaternion& orientation );
 
@@ -87,17 +89,18 @@ public:
     // parameter and therefore don't come from the message.
     void setColor ( Ogre::ColourValue color );
 
-    void setVisible ( bool visible );
-
+    void setVisiblities ( bool render_covariance, bool render_id, bool render_sensor_type );
 
 private:
     // The object implementing the actual pose shape
     boost::shared_ptr<rviz::Arrow> pose_;
-    
+
     // the object implementing the center of the detection
     boost::shared_ptr<rviz::Shape> mean_;
 
-    boost::shared_ptr<CovarianceVisual> covariance_visual_;
+    boost::shared_ptr<CovarianceVisual> covariance_;
+    
+    boost::shared_ptr<TextVisual> detection_id_;
 
     // A SceneNode whose pose is set to match the coordinate frame of
     // the Imu message header.
@@ -114,12 +117,9 @@ private:
     Ogre::ColourValue color_;
 
     // transform
-    Ogre::Vector3 position_;
-    Ogre::Quaternion orientation_;
-
+    Ogre::Matrix4 transform_;
 };
 
 } // end namespace tuw_pose_rviz
 
 #endif // OBJECT_DETECTION_VISUAL_H
-// kate: indent-mode cstyle; indent-width 4; replace-tabs on; 
