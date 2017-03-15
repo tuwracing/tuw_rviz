@@ -67,34 +67,36 @@ ObjectDetectionVisual::~ObjectDetectionVisual()
 
 void ObjectDetectionVisual::setMessage(const tuw_object_msgs::ObjectWithCovariance::ConstPtr& msg)
 {
-  Ogre::Vector3 position = Ogre::Vector3(msg->object.pose.position.x, msg->object.pose.position.y, msg->object.pose.position.z);
+  Ogre::Vector3 position =
+      Ogre::Vector3(msg->object.pose.position.x, msg->object.pose.position.y, msg->object.pose.position.z);
   position = transform_ * position;
-  position.z = 0; // fix on ground z=0
-  
+  position.z = 0;  // fix on ground z=0
+
   Ogre::Vector3 vel = Ogre::Vector3(msg->object.twist.linear.x, msg->object.twist.linear.y, msg->object.twist.linear.z);
-  
-  Ogre::Quaternion orientation = Ogre::Quaternion(msg->object.pose.orientation.w, msg->object.pose.orientation.x, msg->object.pose.orientation.y, msg->object.pose.orientation.z);
-  
+
+  Ogre::Quaternion orientation = Ogre::Quaternion(msg->object.pose.orientation.w, msg->object.pose.orientation.x,
+                                                  msg->object.pose.orientation.y, msg->object.pose.orientation.z);
+
   covariance_->setVisible(true);
   Ogre::Matrix3 C = Ogre::Matrix3(msg->covariance_pose[0], msg->covariance_pose[1], msg->covariance_pose[2],
                                   msg->covariance_pose[3], msg->covariance_pose[4], msg->covariance_pose[5],
                                   msg->covariance_pose[6], msg->covariance_pose[7], msg->covariance_pose[8]);
-    
+
   // rotate covariance matrix in right coordinates
   // cov(Ax) = A * cov(x) * AT
   Ogre::Matrix3 rotation_mat;
   transform_.extract3x3Matrix(rotation_mat);
   C = rotation_mat * C * rotation_mat.Transpose();
-  
+
   covariance_->setOrientation(orientation);
   covariance_->setPosition(position);
   covariance_->setMeanCovariance(Ogre::Vector3(0, 0, 0), C);
-  
+
   pose_->setPosition(position);
   pose_->setDirection(vel);
-  
+
   // only show arrow if velocity > 0 (in any direction)
-  if(vel == Ogre::Vector3::ZERO)
+  if (vel == Ogre::Vector3::ZERO)
   {
     pose_->getSceneNode()->setVisible(false, true);
   }
@@ -102,26 +104,24 @@ void ObjectDetectionVisual::setMessage(const tuw_object_msgs::ObjectWithCovarian
   {
     pose_->getSceneNode()->setVisible(true, true);
   }
-  
+
   mean_->setPosition(position);
   mean_->setScale(Ogre::Vector3(0.1, 0.1, 0.1));
-  
+
   detection_id_->setPosition(position - Ogre::Vector3(0, 0, 0.2));
   detection_id_->setCharacterHeight(0.2);
-  
-  
+
   // concatenate ids with confidences as string for display
   // only first two decimal digits are displayed for confidences
   std::string ids = "";
   std::vector<int>::const_iterator it_ids = msg->object.ids.begin();
   std::vector<double>::const_iterator it_conf = msg->object.ids_confidence.begin();
-  
-  for(; (it_ids != msg->object.ids.end()) || (it_conf != msg->object.ids_confidence.end()); it_ids++, it_conf++)
+
+  for (; (it_ids != msg->object.ids.end()) || (it_conf != msg->object.ids_confidence.end()); it_ids++, it_conf++)
   {
-    
     std::string conf = (boost::format("%.2f") % *it_conf).str();
-    
-    if(it_ids == (msg->object.ids.end() - 1))
+
+    if (it_ids == (msg->object.ids.end() - 1))
     {
       ids += boost::lexical_cast<std::string>(*it_ids) + " (" + conf + ")";
     }
@@ -130,7 +130,7 @@ void ObjectDetectionVisual::setMessage(const tuw_object_msgs::ObjectWithCovarian
       ids += boost::lexical_cast<std::string>(*it_ids) + " (" + conf + ")" + ", ";
     }
   }
-  
+
   detection_id_->setCaption(ids);
 }
 
@@ -175,6 +175,11 @@ void ObjectDetectionVisual::setVisiblities(bool render_covariance, bool render_i
 {
   covariance_->setVisible(render_covariance);
   detection_id_->setVisible(render_id);
+}
+
+void ObjectDetectionVisual::setStyle(Styles style)
+{
+  
 }
 
 }  // end namespace marker_rviz

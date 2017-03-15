@@ -35,6 +35,7 @@
 #include <rviz/ogre_helpers/shape.h>
 #include <ObjectDetection/CovarianceVisual.h>
 #include <ObjectDetection/TextVisual.h>
+#include <ObjectDetection/common.h>
 
 namespace Ogre
 {
@@ -66,7 +67,7 @@ public:
     virtual ~ObjectDetectionVisual();
 
     // Configure the visual to show the data in the message.
-    void setMessage ( const tuw_object_msgs::ObjectWithCovariance::ConstPtr& msg );
+    virtual void setMessage ( const tuw_object_msgs::ObjectWithCovariance::ConstPtr& msg );
 
     // Set the pose of the coordinate frame the message refers to.
     // These could be done inside setMessage(), but that would require
@@ -83,13 +84,15 @@ public:
 
     // Set the scale of the visual, which is an user-editable
     // parameter and therefore don't come from the message.
-    void setScale ( float scale );
+    virtual void setScale ( float scale );
 
     // Set the color of the visual's Pose, which is an user-editable
     // parameter and therefore don't come from the message.
-    void setColor ( Ogre::ColourValue color );
+    virtual void setColor ( Ogre::ColourValue color );
 
     void setVisiblities ( bool render_covariance, bool render_id, bool render_sensor_type );
+
+    virtual void setStyle ( Styles style );
 
 private:
     // The object implementing the actual pose shape
@@ -99,9 +102,10 @@ private:
     boost::shared_ptr<rviz::Shape> mean_;
 
     boost::shared_ptr<CovarianceVisual> covariance_;
-    
+
     boost::shared_ptr<TextVisual> detection_id_;
 
+protected:
     // A SceneNode whose pose is set to match the coordinate frame of
     // the Imu message header.
     Ogre::SceneNode* frame_node_;
@@ -120,6 +124,6 @@ private:
     Ogre::Matrix4 transform_;
 };
 
-} // end namespace tuw_pose_rviz
+} // end namespace tuw_object_rviz
 
 #endif // OBJECT_DETECTION_VISUAL_H

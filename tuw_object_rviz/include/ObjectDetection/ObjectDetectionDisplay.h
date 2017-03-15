@@ -35,6 +35,7 @@
 #include <boost/circular_buffer.hpp>
 #include <tuw_object_msgs/ObjectDetection.h>
 #include <rviz/message_filter_display.h>
+#include "ObjectDetection/common.h"
 #endif
 
 namespace Ogre
@@ -47,6 +48,7 @@ namespace rviz
 class ColorProperty;
 class FloatProperty;
 class BoolProperty;
+class EnumProperty;
 }
 
 // All the source in this plugin is in its own namespace.  This is not
@@ -81,7 +83,6 @@ protected:
 
   // These Qt slots get connected to signals indicating changes in the user-editable properties.
 private Q_SLOTS:
-  void objectVisualTypeChanged();
   virtual void stylesChanged();
 
   // Function to handle an incoming ROS message.
@@ -96,6 +97,7 @@ private:
   rviz::BoolProperty* render_ids_property_;
   rviz::BoolProperty* render_sensor_type_property_;
   rviz::ColorProperty* color_property_;
+  rviz::EnumProperty* style_property_;
 };
 
 } // end namespace tuw_object_rviz

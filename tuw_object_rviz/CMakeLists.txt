@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tuw_object_rviz)
+add_compile_options(-std=c++11) ## for c++ 2011
 
 MESSAGE( STATUS "CMAKE_BUILD_TYPE:              " ${CMAKE_BUILD_TYPE} )
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -fno-strength-reduce -pipe -g3")# -Og
@@ -157,10 +158,15 @@ add_library(${PROJECT_NAME}
   include/ObjectDetection/ObjectDetectionDisplay.h
   include/ObjectDetection/CovarianceVisual.h
   include/ObjectDetection/TextVisual.h
+  include/ObjectDetection/PersonVisual.h
+  include/ObjectDetection/mesh_node.h
+  include/ObjectDetection/ObjectDetectionPersonVisual.h
   src/ObjectDetection/ObjectDetectionVisual.cpp
   src/ObjectDetection/ObjectDetectionDisplay.cpp
   src/ObjectDetection/CovarianceVisual.cpp
   src/ObjectDetection/TextVisual.cpp
+  src/ObjectDetection/PersonVisual.cpp
+  src/ObjectDetection/ObjectDetectionPersonVisual.cpp
 )
 
 ## Add cmake target dependencies of the library

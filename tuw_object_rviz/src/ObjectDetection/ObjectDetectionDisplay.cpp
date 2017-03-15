@@ -35,10 +35,12 @@
 #include <rviz/visualization_manager.h>
 #include <rviz/properties/color_property.h>
 #include <rviz/properties/float_property.h>
+#include <rviz/properties/enum_property.h>
 #include <rviz/frame_manager.h>
 
-#include "ObjectDetection/ObjectDetectionDisplay.h"
-#include "ObjectDetection/ObjectDetectionVisual.h"
+#include <ObjectDetection/ObjectDetectionDisplay.h>
+#include <ObjectDetection/ObjectDetectionVisual.h>
+#include <ObjectDetection/ObjectDetectionPersonVisual.h>
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -79,6 +81,12 @@ void ObjectDetectionDisplay::onInitialize()
 
   color_property_ =
       new rviz::ColorProperty("Color", Qt::black, "Color of detected object", this, SLOT(stylesChanged()));
+      
+  style_property_ = new rviz::EnumProperty( "Person Style", "Cylinders", "Rendering mode to use, in order of computational complexity.", this, SLOT(stylesChanged()), this );
+  style_property_->addOption( "Simple", STYLE_SIMPLE );
+  style_property_->addOption( "Cylinders", STYLE_CYLINDER );
+  style_property_->addOption( "Person meshes", STYLE_PERSON_MESHES );
+  style_property_->addOption( "Bounding boxes", STYLE_BOUNDING_BOXES );
 }
 
 ObjectDetectionDisplay::~ObjectDetectionDisplay()
@@ -95,12 +103,6 @@ void ObjectDetectionDisplay::reset()
   MFDClass::reset();
 }
 
-void ObjectDetectionDisplay::objectVisualTypeChanged()
-{
-  // visual_->
-  stylesChanged();
-}
-
 void ObjectDetectionDisplay::stylesChanged()
 {
   foreach (boost::shared_ptr<ObjectDetectionVisual>& object_detection_visual, visual_)
@@ -109,6 +111,7 @@ void ObjectDetectionDisplay::stylesChanged()
     object_detection_visual->setVisiblities(render_covariances_property_->getBool(), 
                                             render_ids_property_->getBool(),
                                             render_sensor_type_property_->getBool());
+    object_detection_visual->setStyle(static_cast<Styles>(style_property_->getOptionInt()));
   }
 }
 
@@ -123,8 +126,16 @@ void ObjectDetectionDisplay::processMessage(const tuw_object_msgs::ObjectDetecti
   {
     // create new visual object
     boost::shared_ptr<ObjectDetectionVisual> detected_object_visual;
-    detected_object_visual =
-        boost::shared_ptr<ObjectDetectionVisual>(new ObjectDetectionVisual(context_->getSceneManager(), scene_node_));
+    
+    // TODO: add additional object types and their visualization
+    if(msg->type == tuw_object_msgs::ObjectDetection::OBJECT_TYPE_PERSON)
+    {
+      detected_object_visual = boost::shared_ptr<ObjectDetectionVisual>(new ObjectDetectionPersonVisual(context_->getSceneManager(), scene_node_));
+    }
+    else
+    {
+      detected_object_visual = boost::shared_ptr<ObjectDetectionVisual>(new ObjectDetectionVisual(context_->getSceneManager(), scene_node_));
+    }
 
     tuw_object_msgs::ObjectWithCovarianceConstPtr detected_object =
         boost::shared_ptr<tuw_object_msgs::ObjectWithCovariance>(
