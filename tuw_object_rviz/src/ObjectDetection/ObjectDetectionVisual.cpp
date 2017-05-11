@@ -80,20 +80,28 @@ void ObjectDetectionVisual::setMessage(const tuw_object_msgs::ObjectWithCovarian
   Ogre::Quaternion orientation = Ogre::Quaternion(msg->object.pose.orientation.w, msg->object.pose.orientation.x,
                                                   msg->object.pose.orientation.y, msg->object.pose.orientation.z);
 
-  covariance_->setVisible(true);
-  Ogre::Matrix3 C = Ogre::Matrix3(msg->covariance_pose[0], msg->covariance_pose[1], msg->covariance_pose[2],
-                                  msg->covariance_pose[3], msg->covariance_pose[4], msg->covariance_pose[5],
-                                  msg->covariance_pose[6], msg->covariance_pose[7], msg->covariance_pose[8]);
+  if(msg->covariance_pose.size() == 9)
+  {
+    covariance_->setVisible(true);
+    Ogre::Matrix3 C = Ogre::Matrix3(msg->covariance_pose[0], msg->covariance_pose[1], msg->covariance_pose[2],
+                                    msg->covariance_pose[3], msg->covariance_pose[4], msg->covariance_pose[5],
+                                    msg->covariance_pose[6], msg->covariance_pose[7], msg->covariance_pose[8]);
 
-  // rotate covariance matrix in right coordinates
-  // cov(Ax) = A * cov(x) * AT
-  Ogre::Matrix3 rotation_mat;
-  transform_.extract3x3Matrix(rotation_mat);
-  C = rotation_mat * C * rotation_mat.Transpose();
+    // rotate covariance matrix in right coordinates
+    // cov(Ax) = A * cov(x) * AT
+    Ogre::Matrix3 rotation_mat;
+    transform_.extract3x3Matrix(rotation_mat);
+    C = rotation_mat * C * rotation_mat.Transpose();
 
-  covariance_->setOrientation(orientation);
-  covariance_->setPosition(position);
-  covariance_->setMeanCovariance(Ogre::Vector3(0, 0, 0), C);
+    covariance_->setOrientation(orientation);
+    covariance_->setPosition(position);
+    covariance_->setMeanCovariance(Ogre::Vector3(0, 0, 0), C);
+  }
+  else
+  {
+    covariance_->setVisible(false);
+    ROS_WARN("Covariance is not 9x9 won't display");
+  }
 
   pose_->setPosition(position);
   pose_->setDirection(vel);
