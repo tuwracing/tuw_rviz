@@ -1,5 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tuw_object_rviz)
+add_compile_options(-std=c++11) ## for c++ 2011
+
+MESSAGE( STATUS "CMAKE_BUILD_TYPE:              " ${CMAKE_BUILD_TYPE} )
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -fno-strength-reduce -pipe -g3")# -Og
+set(CMAKE_CSS_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -pipe -Ofast")
+
+if(CMAKE_BUILD_TYPE MATCHES Release)
+MESSAGE( STATUS "CMAKE_CSS_FLAGS_RELEASE:       " ${CMAKE_CSS_FLAGS_RELEASE} )
+endif(CMAKE_BUILD_TYPE MATCHES Release)
+
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+MESSAGE( STATUS "CMAKE_CXX_FLAGS_DEBUG:         " ${CMAKE_CXX_FLAGS_DEBUG} )
+endif(CMAKE_BUILD_TYPE MATCHES Debug)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -113,13 +126,48 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
+## This setting causes Qt's "MOC" generation to happen automatically.
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+## This plugin includes Qt widgets, so we must include Qt.
+## We'll use the version that rviz used so they are compatible.
+if(rviz_QT_VERSION VERSION_LESS "5")
+  message(STATUS "Using Qt4 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
+  find_package(Qt4 ${rviz_QT_VERSION} EXACT REQUIRED QtCore QtGui)
+  ## pull in all required include dirs, define QT_LIBRARIES, etc.
+  include(${QT_USE_FILE})
+else()
+  message(STATUS "Using Qt5 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
+  find_package(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets)
+  ## make target_link_libraries(${QT_LIBRARIES}) pull in all required dependencies
+  set(QT_LIBRARIES Qt5::Widgets)
+endif()
+
+## I prefer the Qt signals and slots to avoid defining "emit", "slots",
+## etc because they can conflict with boost signals, so define QT_NO_KEYWORDS here.
+add_definitions(-DQT_NO_KEYWORDS)
+
 ## Declare a C++ library
-# add_library(tuw_object_rviz
-#   src/${PROJECT_NAME}/tuw_object_rviz.cpp
-# )
+add_library(${PROJECT_NAME}
+  include/ObjectDetection/ObjectDetectionVisual.h
+  include/ObjectDetection/ObjectDetectionDisplay.h
+  include/ObjectDetection/CovarianceVisual.h
+  include/ObjectDetection/TextVisual.h
+  include/ObjectDetection/PersonVisual.h
+  include/ObjectDetection/mesh_node.h
+  include/ObjectDetection/ObjectDetectionPersonVisual.h
+  src/ObjectDetection/ObjectDetectionVisual.cpp
+  src/ObjectDetection/ObjectDetectionDisplay.cpp
+  src/ObjectDetection/CovarianceVisual.cpp
+  src/ObjectDetection/TextVisual.cpp
+  src/ObjectDetection/PersonVisual.cpp
+  src/ObjectDetection/ObjectDetectionPersonVisual.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -134,9 +182,10 @@ include_directories(
 # add_dependencies(tuw_object_rviz_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(tuw_object_rviz_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${QT_LIBRARIES}
+)
 
 #############
 ## Install ##
