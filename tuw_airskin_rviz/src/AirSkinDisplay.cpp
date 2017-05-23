@@ -28,7 +28,6 @@
  */
 #include "AirSkinDisplay.h"
 #include <tf/transform_broadcaster.h>
-#include <tf/transform_listener.h>
 
 namespace tuw_airskin_rviz
 {
@@ -36,10 +35,10 @@ namespace tuw_airskin_rviz
 // constructor the parameters it needs to fully initialize.
 AirSkinDisplay::AirSkinDisplay()
 {
-    pressures_topic_ = new rviz::RosTopicProperty("Airskin Pressures Topic", "",
+    pressures_topic_ = std::make_unique<rviz::RosTopicProperty>("Airskin Pressures Topic", "",
                                          QString::fromStdString(ros::message_traits::datatype<tuw_airskin_msgs::AirskinPressures>()),
                                          "tuw_airskin_msgs::AirskinPressures topic to subscribe to.", this, SLOT( updateTopics() ));
-    colors_topic_ = new rviz::RosTopicProperty("Airskin Colors Topic", "",
+    colors_topic_ = std::make_unique<rviz::RosTopicProperty>("Airskin Colors Topic", "",
                                          QString::fromStdString(ros::message_traits::datatype<tuw_airskin_msgs::AirskinColors>()),
                                          "tuw_airskin_msgs::AirskinColors topic to subscribe to.", this, SLOT( updateTopics() ));
 }
@@ -143,7 +142,7 @@ void AirSkinDisplay::pressuresCallback(const tuw_airskin_msgs::AirskinPressures:
     //get frame id from pad name
     for(int i=0;i<arrowMsgs_.size();i++) {
         arrowMsgs_[i].scale.x = 0.02 + ((_pressures->pressures[i]-min_press_[i])/float(max_press_[i]+1000-min_press_[i]))/10;
-        arrowMsgs_[i].header.frame_id = tf::resolve("p3dx",_pressures->names[i]);
+        arrowMsgs_[i].header.frame_id = _pressures->frame_ids[i];
     }
 }
     

@@ -102,8 +102,8 @@ private:
     //Called periodically by rviz
     void update( float wall_dt, float ros_dt );
 
-    rviz::RosTopicProperty* pressures_topic_;
-    rviz::RosTopicProperty* colors_topic_;
+    std::unique_ptr<rviz::RosTopicProperty> pressures_topic_;
+    std::unique_ptr<rviz::RosTopicProperty> colors_topic_;
     
     // Storage of the visual
     std::vector<std::shared_ptr<rviz::ArrowMarker>> arrows_;
@@ -114,7 +114,6 @@ private:
     rviz::MarkerDisplay markerDisplay_;
     std::vector<unsigned int> min_press_;
     std::vector<unsigned int> max_press_;
-    
 };
 
 } // end namespace tuw_pose_rviz_plugin
