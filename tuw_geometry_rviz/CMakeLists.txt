@@ -151,6 +151,10 @@ add_library(${PROJECT_NAME}
   include/LineSegments2D/LineSegments2DDisplay.h
   src/LineSegments2D/LineSegments2DVisual.cpp
   src/LineSegments2D/LineSegments2DDisplay.cpp
+  include/WeightedPoseWithCovarianceArray/WeightedPoseWithCovarianceArrayVisual.h
+  include/WeightedPoseWithCovarianceArray/WeightedPoseWithCovarianceArrayDisplay.h
+  src/WeightedPoseWithCovarianceArray/WeightedPoseWithCovarianceArrayVisual.cpp
+  src/WeightedPoseWithCovarianceArray/WeightedPoseWithCovarianceArrayDisplay.cpp
 )
 
 ## Specify libraries to link a library or executable target against
@@ -212,3 +216,5 @@ install(DIRECTORY
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+add_subdirectory(include/WeightedPoseWithCovarianceArray)
