@@ -30,10 +30,10 @@
 #ifndef WEIGHTED_POSE_WITH_COVARIANCE_ARRAY_VISUAL_H
 #define WEIGHTED_POSE_WITH_COVARIANCE_ARRAY_VISUAL_H
 
-#include <tuw_geometry_msgs/WeightedPoseWithCovarianceArray.h>
-#include <tuw_geometry_msgs/WeightedPoseWithCovariance.h>
 #include <rviz/ogre_helpers/arrow.h>
 #include <rviz/ogre_helpers/shape.h>
+#include <tuw_geometry_msgs/WeightedPoseWithCovariance.h>
+#include <tuw_geometry_msgs/WeightedPoseWithCovarianceArray.h>
 
 namespace Ogre
 {
@@ -49,68 +49,74 @@ class Shape;
 
 namespace tuw_geometry_rviz
 {
-
 // Declare the visual class for this display.
 class WeightedPoseWithCovarianceArrayVisual
 {
 public:
   // Constructor.  Creates the visual stuff and puts it into the
   // scene, but in an unconfigured state.
-  WeightedPoseWithCovarianceArrayVisual( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node );
+  WeightedPoseWithCovarianceArrayVisual(Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node);
 
   // Destructor.  Removes the visual stuff from the scene.
   virtual ~WeightedPoseWithCovarianceArrayVisual();
 
   // Configure the visual to show the data in the message.
-  void setMessage( const tuw_geometry_msgs::WeightedPoseWithCovarianceArray::ConstPtr& msg );
+  void setMessage(const tuw_geometry_msgs::WeightedPoseWithCovarianceArray::ConstPtr &msg);
 
   // Set the pose of the coordinate frame the message refers to.
   // These could be done inside setMessage(), but that would require
   // calls to FrameManager and error handling inside setMessage(),
-  // which doesn't seem as clean.  This way WeightedPoseWithCovarianceArrayVisual is
+  // which doesn't seem as clean.  This way
+  // WeightedPoseWithCovarianceArrayVisual is
   // only responsible for visualization.
-  void setFramePosition( const Ogre::Vector3& position );
-  void setFrameOrientation( const Ogre::Quaternion& orientation );
+  void setFramePosition(const Ogre::Vector3 &position);
+  void setFrameOrientation(const Ogre::Quaternion &orientation);
 
   // Set the scale of the visual, which is an user-editable
-  // parameter and therefore don't come from the PoseWithCovarianceStamped message.
-  void setScalePose( float scale );
+  // parameter and therefore don't come from the PoseWithCovarianceStamped
+  // message.
+  void setScalePose(float scale);
 
   // Set the color of the visual's Pose, which is an user-editable
-  // parameter and therefore don't come from the PoseWithCovarianceStamped message.
-  void setColorPose( Ogre::ColourValue color );
+  // parameter and therefore don't come from the PoseWithCovarianceStamped
+  // message.
+  void setColorPose(Ogre::ColourValue low, Ogre::ColourValue high);
 
   // Set the color of the visual's variance, which is an user-editable
-  // parameter and therefore don't come from the PoseWithCovarianceStamped message.
-  void setColorVariance( Ogre::ColourValue color );
+  // parameter and therefore don't come from the PoseWithCovarianceStamped
+  // message.
+  void setColorVariance(Ogre::ColourValue color);
+
+  Ogre::ColourValue colorFromWeight(Ogre::ColourValue low, Ogre::ColourValue high, double weight);
 
 private:
   // The object implementing the actual pose shape
-  std::vector< boost::shared_ptr<rviz::Arrow> > poses_;
+  std::vector< boost::shared_ptr< rviz::Arrow > > poses_;
 
   // The object implementing the actual variance shape
-  std::vector< boost::shared_ptr<rviz::Shape> > variances_;
+  std::vector< boost::shared_ptr< rviz::Shape > > variances_;
 
   // A SceneNode whose pose is set to match the coordinate frame of
   // the Imu message header.
-  Ogre::SceneNode* frame_node_;
+  Ogre::SceneNode *frame_node_;
 
   // The SceneManager, kept here only so the destructor can ask it to
   // destroy the ``frame_node_``.
-  Ogre::SceneManager* scene_manager_;
+  Ogre::SceneManager *scene_manager_;
 
   // The pose Shape object's scale
   float scale_pose_;
 
   // The pose Shape object's color
-  Ogre::ColourValue color_pose_;
+  Ogre::ColourValue color_pose_low_;
+  Ogre::ColourValue color_pose_high_;
 
   // The variance Shape object's color
   Ogre::ColourValue color_variance_;
-  
+
   unsigned int count_;
 };
 
-} // end namespace tuw_geometry_rviz
+}  // end namespace tuw_geometry_rviz
 
-#endif // WEIGHTED_POSE_WITH_COVARIANCE_ARRAY_VISUAL_H
+#endif  // WEIGHTED_POSE_WITH_COVARIANCE_ARRAY_VISUAL_H
