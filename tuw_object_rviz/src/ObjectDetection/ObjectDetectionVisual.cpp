@@ -32,10 +32,10 @@
 
 #include <ros/ros.h>
 
-#include <OGRE/OgreVector3.h>
 #include <OGRE/OgreMatrix3.h>
-#include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreVector3.h>
 
 #include "ObjectDetection/ObjectDetectionVisual.h"
 
@@ -80,7 +80,7 @@ void ObjectDetectionVisual::setMessage(const tuw_object_msgs::ObjectWithCovarian
   Ogre::Quaternion orientation = Ogre::Quaternion(msg->object.pose.orientation.w, msg->object.pose.orientation.x,
                                                   msg->object.pose.orientation.y, msg->object.pose.orientation.z);
 
-  if(msg->covariance_pose.size() == 9)
+  if (msg->covariance_pose.size() == 9)
   {
     covariance_->setVisible(true);
     Ogre::Matrix3 C = Ogre::Matrix3(msg->covariance_pose[0], msg->covariance_pose[1], msg->covariance_pose[2],
@@ -119,14 +119,34 @@ void ObjectDetectionVisual::setMessage(const tuw_object_msgs::ObjectWithCovarian
   mean_->setPosition(position);
   mean_->setScale(Ogre::Vector3(0.1, 0.1, 0.1));
 
+  // traffic cones encode their color in the object
+  if (msg->object.shape == tuw_object_msgs::Object::SHAPE_TRAFFIC_CONE)
+  {
+    if (msg->object.shape_variables[1] == 0)
+    {
+      Ogre::ColourValue coneBlue(0, 0, 1.0, 1.0);
+      mean_->setColor(coneBlue);
+    }
+    else if (msg->object.shape_variables[1] == 1)
+    {
+      Ogre::ColourValue coneYellow(1.0, 1.0, 0, 1.0);
+      mean_->setColor(coneYellow);
+    }
+    else if (msg->object.shape_variables[1] == 2)
+    {
+      Ogre::ColourValue coneRed(1.0, 0, 0, 1.0);
+      mean_->setColor(coneRed);
+    }
+  }
+
   detection_id_->setPosition(position - Ogre::Vector3(0, 0, 0.2));
   detection_id_->setCharacterHeight(0.2);
 
   // concatenate ids with confidences as string for display
   // only first two decimal digits are displayed for confidences
   std::string ids = "";
-  std::vector<int>::const_iterator it_ids = msg->object.ids.begin();
-  std::vector<double>::const_iterator it_conf = msg->object.ids_confidence.begin();
+  std::vector< int >::const_iterator it_ids = msg->object.ids.begin();
+  std::vector< double >::const_iterator it_conf = msg->object.ids_confidence.begin();
 
   for (; (it_ids != msg->object.ids.end()) || (it_conf != msg->object.ids_confidence.end()); it_ids++, it_conf++)
   {
@@ -134,11 +154,11 @@ void ObjectDetectionVisual::setMessage(const tuw_object_msgs::ObjectWithCovarian
 
     if (it_ids == (msg->object.ids.end() - 1))
     {
-      ids += boost::lexical_cast<std::string>(*it_ids) + " (" + conf + ")";
+      ids += boost::lexical_cast< std::string >(*it_ids) + " (" + conf + ")";
     }
     else
     {
-      ids += boost::lexical_cast<std::string>(*it_ids) + " (" + conf + ")" + ", ";
+      ids += boost::lexical_cast< std::string >(*it_ids) + " (" + conf + ")" + ", ";
     }
   }
 
@@ -176,7 +196,7 @@ void ObjectDetectionVisual::setScale(float scale)
 void ObjectDetectionVisual::setColor(Ogre::ColourValue color)
 {
   pose_->setColor(color);
-  mean_->setColor(color);
+  // mean_->setColor(color);
   covariance_->setColor(color);
   detection_id_->setColor(color);
   color_ = color;
@@ -190,7 +210,6 @@ void ObjectDetectionVisual::setVisiblities(bool render_covariance, bool render_i
 
 void ObjectDetectionVisual::setStyle(Styles style)
 {
-  
 }
 
 }  // end namespace marker_rviz
