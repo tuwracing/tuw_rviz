@@ -33,13 +33,13 @@
 #ifndef OBJECT_DETECTION_PERSON_VISUAL_H
 #define OBJECT_DETECTION_PERSON_VISUAL_H
 
-#include <ObjectDetection/ObjectDetectionVisual.h>
+#include <ObjectDetection/ObjectWithCovarianceVisual.h>
 #include <ObjectDetection/PersonVisual.h>
 
 namespace tuw_object_rviz
 {
 
-class ObjectDetectionPersonVisual : public ObjectDetectionVisual
+class ObjectDetectionPersonVisual : public ObjectWithCovarianceVisual
 {
 public:
      ObjectDetectionPersonVisual ( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node );

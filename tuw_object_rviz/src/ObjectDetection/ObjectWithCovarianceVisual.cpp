@@ -37,11 +37,11 @@
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreVector3.h>
 
-#include "ObjectDetection/ObjectDetectionVisual.h"
+#include "ObjectDetection/ObjectWithCovarianceVisual.h"
 
 namespace tuw_object_rviz
 {
-ObjectDetectionVisual::ObjectDetectionVisual(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node)
+ObjectWithCovarianceVisual::ObjectWithCovarianceVisual(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node)
 {
   scene_manager_ = scene_manager;
 
@@ -62,13 +62,13 @@ ObjectDetectionVisual::ObjectDetectionVisual(Ogre::SceneManager* scene_manager, 
   detection_id_.reset(new TextVisual(scene_manager_, frame_node_, Ogre::Vector3(0, 0, 0)));
 }
 
-ObjectDetectionVisual::~ObjectDetectionVisual()
+ObjectWithCovarianceVisual::~ObjectWithCovarianceVisual()
 {
   // Destroy the frame node since we don't need it anymore.
   scene_manager_->destroySceneNode(frame_node_);
 }
 
-void ObjectDetectionVisual::setMessage(const tuw_object_msgs::ObjectWithCovariance::ConstPtr& msg)
+void ObjectWithCovarianceVisual::setMessage(const tuw_object_msgs::ObjectWithCovariance::ConstPtr& msg)
 {
   Ogre::Vector3 position =
       Ogre::Vector3(msg->object.pose.position.x, msg->object.pose.position.y, msg->object.pose.position.z);
@@ -178,25 +178,25 @@ void ObjectDetectionVisual::setMessage(const tuw_object_msgs::ObjectWithCovarian
 }
 
 // Position is passed through to the SceneNode.
-void ObjectDetectionVisual::setFramePosition(const Ogre::Vector3& position)
+void ObjectWithCovarianceVisual::setFramePosition(const Ogre::Vector3& position)
 {
   frame_node_->setPosition(position);
 }
 
 // Orientation is passed through to the SceneNode.
-void ObjectDetectionVisual::setFrameOrientation(const Ogre::Quaternion& orientation)
+void ObjectWithCovarianceVisual::setFrameOrientation(const Ogre::Quaternion& orientation)
 {
   frame_node_->setOrientation(orientation);
 }
 
-void ObjectDetectionVisual::setTransform(const Ogre::Vector3& position, const Ogre::Quaternion& orientation)
+void ObjectWithCovarianceVisual::setTransform(const Ogre::Vector3& position, const Ogre::Quaternion& orientation)
 {
   transform_ = Ogre::Matrix4(orientation);
   transform_.setTrans(position);
 }
 
 // Scale is passed through to the pose Shape object.
-void ObjectDetectionVisual::setScale(float scale)
+void ObjectWithCovarianceVisual::setScale(float scale)
 {
   pose_->setScale(Ogre::Vector3(scale, scale, scale));
   mean_->setScale(Ogre::Vector3(scale, scale, scale));
@@ -205,20 +205,20 @@ void ObjectDetectionVisual::setScale(float scale)
 }
 
 // Color is passed through to the pose Shape object.
-void ObjectDetectionVisual::setColor(Ogre::ColourValue color)
+void ObjectWithCovarianceVisual::setColor(Ogre::ColourValue color)
 {
   pose_->setColor(color);
   detection_id_->setColor(color);
   color_ = color;
 }
 
-void ObjectDetectionVisual::setVisiblities(bool render_covariance, bool render_id, bool render_sensor_type)
+void ObjectWithCovarianceVisual::setVisiblities(bool render_covariance, bool render_id, bool render_sensor_type)
 {
   covariance_->setVisible(render_covariance);
   detection_id_->setVisible(render_id);
 }
 
-void ObjectDetectionVisual::setStyle(Styles style)
+void ObjectWithCovarianceVisual::setStyle(Styles style)
 {
 }
 

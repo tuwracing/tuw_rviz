@@ -154,15 +154,17 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-  include/ObjectDetection/ObjectDetectionVisual.h
+  include/ObjectDetection/ObjectWithCovarianceVisual.h
   include/ObjectDetection/ObjectDetectionDisplay.h
+  include/ObjectDetection/ObjectWithCovarianceArrayDisplay.h
   include/ObjectDetection/CovarianceVisual.h
   include/ObjectDetection/TextVisual.h
   include/ObjectDetection/PersonVisual.h
   include/ObjectDetection/mesh_node.h
   include/ObjectDetection/ObjectDetectionPersonVisual.h
-  src/ObjectDetection/ObjectDetectionVisual.cpp
+  src/ObjectDetection/ObjectWithCovarianceVisual.cpp
   src/ObjectDetection/ObjectDetectionDisplay.cpp
+  src/ObjectDetection/ObjectWithCovarianceArrayDisplay.cpp
   src/ObjectDetection/CovarianceVisual.cpp
   src/ObjectDetection/TextVisual.cpp
   src/ObjectDetection/PersonVisual.cpp

@@ -7,5 +7,12 @@
     </description>
     <message_type>tuw_object_msgs/ObjectDetection</message_type>
   </class>
+  <class name="tuw_object_rviz/ObjectWithCovarianceArray"
+         type="tuw_object_rviz::ObjectWithCovarianceArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Display array of objects with covariance
+    </description>
+    <message_type>tuw_object_msgs/ObjectWithCovarianceArray</message_type>
+  </class>
 </library>
-

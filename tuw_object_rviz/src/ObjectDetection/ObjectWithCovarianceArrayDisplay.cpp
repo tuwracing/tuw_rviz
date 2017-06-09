@@ -30,20 +30,20 @@
  *   POSSIBILITY OF SUCH DAMAGE.                                           *
  ***************************************************************************/
 
-#include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
 
 #include <tf/transform_listener.h>
 
-#include <rviz/visualization_manager.h>
-#include <rviz/properties/color_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/enum_property.h>
 #include <rviz/frame_manager.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/visualization_manager.h>
 
-#include <ObjectDetection/ObjectDetectionDisplay.h>
-#include <ObjectDetection/ObjectWithCovarianceVisual.h>
 #include <ObjectDetection/ObjectDetectionPersonVisual.h>
+#include <ObjectDetection/ObjectWithCovarianceArrayDisplay.h>
+#include <ObjectDetection/ObjectWithCovarianceVisual.h>
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -52,7 +52,7 @@ namespace tuw_object_rviz
 {
 // The constructor must have no arguments, so we can't give the
 // constructor the parameters it needs to fully initialize.
-ObjectDetectionDisplay::ObjectDetectionDisplay()
+ObjectWithCovarianceArrayDisplay::ObjectWithCovarianceArrayDisplay()
 {
 }
 
@@ -66,7 +66,7 @@ ObjectDetectionDisplay::ObjectDetectionDisplay()
 // ``MessageFilterDisplay<message type>``, to save typing that long
 // templated class name every time you need to refer to the
 // superclass.
-void ObjectDetectionDisplay::onInitialize()
+void ObjectWithCovarianceArrayDisplay::onInitialize()
 {
   MFDClass::onInitialize();
 
@@ -78,70 +78,60 @@ void ObjectDetectionDisplay::onInitialize()
   render_ids_property_ =
       new rviz::BoolProperty("Render detection IDs", true, "Render IDs of the detection", this, SLOT(stylesChanged()));
 
-  render_sensor_type_property_ =
-      new rviz::BoolProperty("Render sensor type text", false,
-                             "Render detection sensor type as text below detected object", this, SLOT(stylesChanged()));
-
   color_property_ =
       new rviz::ColorProperty("Color", Qt::black, "Color of detected object", this, SLOT(stylesChanged()));
 
-  style_property_ = new rviz::EnumProperty( "Person Style", "Cylinders", "Rendering mode to use, in order of computational complexity.", this, SLOT(stylesChanged()), this );
-  style_property_->addOption( "Simple", STYLE_SIMPLE );
-  style_property_->addOption( "Cylinders", STYLE_CYLINDER );
-  style_property_->addOption( "Person meshes", STYLE_PERSON_MESHES );
-  style_property_->addOption( "Bounding boxes", STYLE_BOUNDING_BOXES );
+  style_property_ = new rviz::EnumProperty("Person Style", "Cylinders",
+                                           "Rendering mode to use, in order of computational complexity.", this,
+                                           SLOT(stylesChanged()), this);
+  style_property_->addOption("Simple", STYLE_SIMPLE);
+  style_property_->addOption("Cylinders", STYLE_CYLINDER);
+  style_property_->addOption("Person meshes", STYLE_PERSON_MESHES);
+  style_property_->addOption("Bounding boxes", STYLE_BOUNDING_BOXES);
 }
 
-ObjectDetectionDisplay::~ObjectDetectionDisplay()
+ObjectWithCovarianceArrayDisplay::~ObjectWithCovarianceArrayDisplay()
 {
-  foreach (boost::shared_ptr<ObjectWithCovarianceVisual>& object_detection_visual, visual_)
+  foreach (boost::shared_ptr< ObjectWithCovarianceVisual >& object_detection_visual, visual_)
   {
     object_detection_visual.reset(new ObjectWithCovarianceVisual(context_->getSceneManager(), scene_node_));
   }
 }
 
 // Clear the visual by deleting its object.
-void ObjectDetectionDisplay::reset()
+void ObjectWithCovarianceArrayDisplay::reset()
 {
   MFDClass::reset();
 }
 
-void ObjectDetectionDisplay::stylesChanged()
+void ObjectWithCovarianceArrayDisplay::stylesChanged()
 {
-  foreach (boost::shared_ptr<ObjectWithCovarianceVisual>& object_detection_visual, visual_)
+  foreach (boost::shared_ptr< ObjectWithCovarianceVisual >& object_detection_visual, visual_)
   {
     object_detection_visual->setColor(color_property_->getOgreColor());
-    object_detection_visual->setVisiblities(render_covariances_property_->getBool(),
-                                            render_ids_property_->getBool(),
-                                            render_sensor_type_property_->getBool());
-    object_detection_visual->setStyle(static_cast<Styles>(style_property_->getOptionInt()));
+    object_detection_visual->setVisiblities(render_covariances_property_->getBool(), render_ids_property_->getBool(),
+                                            false);
+    object_detection_visual->setStyle(static_cast< Styles >(style_property_->getOptionInt()));
   }
 }
 
 // This is our callback to handle an incoming message.
-void ObjectDetectionDisplay::processMessage(const tuw_object_msgs::ObjectDetection::ConstPtr& msg)
+void ObjectWithCovarianceArrayDisplay::processMessage(const tuw_object_msgs::ObjectWithCovarianceArray::ConstPtr& msg)
 {
   // clear previous detections
   visual_.clear();
 
-  for (std::vector<tuw_object_msgs::ObjectWithCovariance>::const_iterator detected_object_it = msg->objects.begin();
+  for (std::vector< tuw_object_msgs::ObjectWithCovariance >::const_iterator detected_object_it = msg->objects.begin();
        detected_object_it != msg->objects.end(); detected_object_it++)
   {
     // create new visual object
-    boost::shared_ptr<ObjectWithCovarianceVisual> detected_object_visual;
+    boost::shared_ptr< ObjectWithCovarianceVisual > detected_object_visual;
 
-    // TODO: add additional object types and their visualization
-    if(msg->type == tuw_object_msgs::ObjectDetection::OBJECT_TYPE_PERSON)
-    {
-      detected_object_visual = boost::shared_ptr<ObjectWithCovarianceVisual>(new ObjectDetectionPersonVisual(context_->getSceneManager(), scene_node_));
-    }
-    else
-    {
-      detected_object_visual = boost::shared_ptr<ObjectWithCovarianceVisual>(new ObjectWithCovarianceVisual(context_->getSceneManager(), scene_node_));
-    }
+    detected_object_visual = boost::shared_ptr< ObjectWithCovarianceVisual >(
+        new ObjectWithCovarianceVisual(context_->getSceneManager(), scene_node_));
 
     tuw_object_msgs::ObjectWithCovarianceConstPtr detected_object =
-        boost::shared_ptr<tuw_object_msgs::ObjectWithCovariance>(
+        boost::shared_ptr< tuw_object_msgs::ObjectWithCovariance >(
             new tuw_object_msgs::ObjectWithCovariance(*detected_object_it));
 
     // Here we call the rviz::FrameManager to get the transform from the
@@ -179,4 +169,4 @@ void ObjectDetectionDisplay::processMessage(const tuw_object_msgs::ObjectDetecti
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(tuw_object_rviz::ObjectDetectionDisplay, rviz::Display)
+PLUGINLIB_EXPORT_CLASS(tuw_object_rviz::ObjectWithCovarianceArrayDisplay, rviz::Display)

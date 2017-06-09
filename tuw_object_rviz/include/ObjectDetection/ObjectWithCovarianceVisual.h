@@ -30,15 +30,15 @@
  *   POSSIBILITY OF SUCH DAMAGE.                                           *
  ***************************************************************************/
 
-#ifndef OBJECT_DETECTION_VISUAL_H
-#define OBJECT_DETECTION_VISUAL_H
+#ifndef OBJECT_WITH_COVARIANCE_VISUAL_H
+#define OBJECT_WITH_COVARIANCE_VISUAL_H
 
-#include <tuw_object_msgs/ObjectDetection.h>
-#include <rviz/ogre_helpers/arrow.h>
-#include <rviz/ogre_helpers/shape.h>
 #include <ObjectDetection/CovarianceVisual.h>
 #include <ObjectDetection/TextVisual.h>
 #include <ObjectDetection/common.h>
+#include <rviz/ogre_helpers/arrow.h>
+#include <rviz/ogre_helpers/shape.h>
+#include <tuw_object_msgs/ObjectWithCovariance.h>
 
 namespace Ogre
 {
@@ -57,76 +57,75 @@ class MovableText;
 
 namespace tuw_object_rviz
 {
-
 // Declare the visual class for this display.
-class ObjectDetectionVisual
+class ObjectWithCovarianceVisual
 {
 public:
-    // Constructor.  Creates the visual stuff and puts it into the
-    // scene, but in an unconfigured state.
-    ObjectDetectionVisual ( Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node );
+  // Constructor.  Creates the visual stuff and puts it into the
+  // scene, but in an unconfigured state.
+  ObjectWithCovarianceVisual(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node);
 
-    // Destructor.  Removes the visual stuff from the scene.
-    virtual ~ObjectDetectionVisual();
+  // Destructor.  Removes the visual stuff from the scene.
+  virtual ~ObjectWithCovarianceVisual();
 
-    // Configure the visual to show the data in the message.
-    virtual void setMessage ( const tuw_object_msgs::ObjectWithCovariance::ConstPtr& msg );
+  // Configure the visual to show the data in the message.
+  virtual void setMessage(const tuw_object_msgs::ObjectWithCovariance::ConstPtr& msg);
 
-    // Set the pose of the coordinate frame the message refers to.
-    // These could be done inside setMessage(), but that would require
-    // calls to FrameManager and error handling inside setMessage(),
-    // which doesn't seem as clean.  This way ObjectDetectionVisual is
-    // only responsible for visualization.
-    void setFramePosition ( const Ogre::Vector3& position );
-    void setFrameOrientation ( const Ogre::Quaternion& orientation );
+  // Set the pose of the coordinate frame the message refers to.
+  // These could be done inside setMessage(), but that would require
+  // calls to FrameManager and error handling inside setMessage(),
+  // which doesn't seem as clean.  This way ObjectWithCovarianceVisual is
+  // only responsible for visualization.
+  void setFramePosition(const Ogre::Vector3& position);
+  void setFrameOrientation(const Ogre::Quaternion& orientation);
 
-    //void setTransformPosition ( const Ogre::Vector3& position );
-    //void setTransformOrientation ( const Ogre::Quaternion& orientation );
+  // void setTransformPosition ( const Ogre::Vector3& position );
+  // void setTransformOrientation ( const Ogre::Quaternion& orientation );
 
-    void setTransform ( const Ogre::Vector3& position, const Ogre::Quaternion& orientation );
+  void setTransform(const Ogre::Vector3& position, const Ogre::Quaternion& orientation);
 
-    // Set the scale of the visual, which is an user-editable
-    // parameter and therefore don't come from the message.
-    virtual void setScale ( float scale );
+  // Set the scale of the visual, which is an user-editable
+  // parameter and therefore don't come from the message.
+  virtual void setScale(float scale);
 
-    // Set the color of the visual's Pose, which is an user-editable
-    // parameter and therefore don't come from the message.
-    virtual void setColor ( Ogre::ColourValue color );
+  // Set the color of the visual's Pose, which is an user-editable
+  // parameter and therefore don't come from the message.
+  virtual void setColor(Ogre::ColourValue color);
 
-    void setVisiblities ( bool render_covariance, bool render_id, bool render_sensor_type );
+  void setVisiblities(bool render_covariance, bool render_id, bool render_sensor_type);
 
-    virtual void setStyle ( Styles style );
+  virtual void setStyle(Styles style);
 
 private:
-    // The object implementing the actual pose shape
-    boost::shared_ptr<rviz::Arrow> pose_;
+  // The object implementing the actual pose shape
+  boost::shared_ptr< rviz::Arrow > pose_;
 
-    // the object implementing the center of the detection
-    boost::shared_ptr<rviz::Shape> mean_;
+  // the object implementing the center of the detection
+  boost::shared_ptr< rviz::Shape > mean_;
 
-    boost::shared_ptr<CovarianceVisual> covariance_;
+  boost::shared_ptr< CovarianceVisual > covariance_;
 
-    boost::shared_ptr<TextVisual> detection_id_;
+  boost::shared_ptr< TextVisual > detection_id_;
 
 protected:
-    // A SceneNode whose pose is set to match the coordinate frame of
-    // the Imu message header.
-    Ogre::SceneNode* frame_node_;
+  // A SceneNode whose pose is set to match the coordinate frame of
+  // the Imu message header.
+  Ogre::SceneNode* frame_node_;
 
-    // The SceneManager, kept here only so the destructor can ask it to
-    // destroy the ``frame_node_``.
-    Ogre::SceneManager* scene_manager_;
+  // The SceneManager, kept here only so the destructor can ask it to
+  // destroy the ``frame_node_``.
+  Ogre::SceneManager* scene_manager_;
 
-    // The pose Shape object's scale
-    float scale_;
+  // The pose Shape object's scale
+  float scale_;
 
-    // The pose Shape object's color
-    Ogre::ColourValue color_;
+  // The pose Shape object's color
+  Ogre::ColourValue color_;
 
-    // transform
-    Ogre::Matrix4 transform_;
+  // transform
+  Ogre::Matrix4 transform_;
 };
 
-} // end namespace tuw_object_rviz
+}  // end namespace tuw_object_rviz
 
-#endif // OBJECT_DETECTION_VISUAL_H
+#endif  // OBJECT_DETECTION_VISUAL_H

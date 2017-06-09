@@ -39,7 +39,7 @@
 
 namespace tuw_object_rviz
 {
-ObjectDetectionPersonVisual::ObjectDetectionPersonVisual(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node) : ObjectDetectionVisual(scene_manager, parent_node)
+ObjectDetectionPersonVisual::ObjectDetectionPersonVisual(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node) : ObjectWithCovarianceVisual(scene_manager, parent_node)
 {
   person_visual_.reset(new CylinderPersonVisual(PersonVisualDefaultArgs(scene_manager_, frame_node_)));
 }
@@ -52,7 +52,7 @@ ObjectDetectionPersonVisual::~ObjectDetectionPersonVisual()
 void ObjectDetectionPersonVisual::setMessage(const tuw_object_msgs::ObjectWithCovariance::ConstPtr& msg)
 {
   // call parent class set Message to also display covariance, center, ids
-  ObjectDetectionVisual::setMessage(msg);
+  ObjectWithCovarianceVisual::setMessage(msg);
   
   Ogre::Vector3 position = Ogre::Vector3(msg->object.pose.position.x, msg->object.pose.position.y, msg->object.pose.position.z);
   position = transform_ * position;
@@ -68,7 +68,7 @@ void ObjectDetectionPersonVisual::setMessage(const tuw_object_msgs::ObjectWithCo
 // Color is passed through to the pose Shape object.
 void ObjectDetectionPersonVisual::setColor(Ogre::ColourValue color)
 {
-  ObjectDetectionVisual::setColor(color);
+  ObjectWithCovarianceVisual::setColor(color);
   person_visual_->setColor(color);
 }
 

@@ -30,14 +30,14 @@
  *   POSSIBILITY OF SUCH DAMAGE.                                           *
  ***************************************************************************/
 
-#ifndef OBJECT_DETECTION_DISPLAY_H
-#define OBJECT_DETECTION_DISPLAY_H
+#ifndef OBJECT_WITH_COVARIANCE_ARRAY_DISPLAY_H
+#define OBJECT_WITH_COVARIANCE_ARRAY_DISPLAY_H
 
 #ifndef Q_MOC_RUN
-#include <map>
-#include <boost/circular_buffer.hpp>
-#include <tuw_object_msgs/ObjectDetection.h>
 #include <rviz/message_filter_display.h>
+#include <tuw_object_msgs/ObjectWithCovarianceArray.h>
+#include <boost/circular_buffer.hpp>
+#include <map>
 #include "ObjectDetection/common.h"
 #endif
 
@@ -58,20 +58,19 @@ class EnumProperty;
 // required but is good practice.
 namespace tuw_object_rviz
 {
-
 class ObjectWithCovarianceVisual;
 
 // Here we declare our new subclass of rviz::Display.  Every display
 // which can be listed in the "Displays" panel is a subclass of
 // rviz::Display.
-class ObjectDetectionDisplay: public rviz::MessageFilterDisplay<tuw_object_msgs::ObjectDetection>
+class ObjectWithCovarianceArrayDisplay : public rviz::MessageFilterDisplay< tuw_object_msgs::ObjectWithCovarianceArray >
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   // Constructor.  pluginlib::ClassLoader creates instances by calling
   // the default constructor, so make sure you have one.
-  ObjectDetectionDisplay();
-  virtual ~ObjectDetectionDisplay();
+  ObjectWithCovarianceArrayDisplay();
+  virtual ~ObjectWithCovarianceArrayDisplay();
 
   // Overrides of protected virtual functions from Display.  As much
   // as possible, when Displays are not enabled, they should not be
@@ -90,20 +89,19 @@ private Q_SLOTS:
 
   // Function to handle an incoming ROS message.
 private:
-  void processMessage( const tuw_object_msgs::ObjectDetection::ConstPtr& msg );
+  void processMessage(const tuw_object_msgs::ObjectWithCovarianceArray::ConstPtr& msg);
 
   // Storage of the visual
-  std::vector<boost::shared_ptr<ObjectWithCovarianceVisual> > visual_;
+  std::vector< boost::shared_ptr< ObjectWithCovarianceVisual > > visual_;
 
   // Properties
   rviz::BoolProperty* render_covariances_property_;
   rviz::BoolProperty* render_ids_property_;
-  rviz::BoolProperty* render_sensor_type_property_;
   rviz::ColorProperty* color_property_;
   rviz::EnumProperty* style_property_;
 };
 
-} // end namespace tuw_object_rviz
+}  // end namespace tuw_object_rviz
 
-#endif // OBJECT_DETECTION_DISPLAY_H
+#endif  // OBJECT_DETECTION_DISPLAY_H
 // %EndTag(FULL_SOURCE)%
