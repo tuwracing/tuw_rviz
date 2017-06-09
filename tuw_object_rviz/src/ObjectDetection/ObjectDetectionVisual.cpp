@@ -58,7 +58,7 @@ ObjectDetectionVisual::ObjectDetectionVisual(Ogre::SceneManager* scene_manager, 
   // set thier position and direction relative to their header frame.
   pose_.reset(new rviz::Arrow(scene_manager_, frame_node_));
   covariance_.reset(new ProbabilityEllipseCovarianceVisual(scene_manager_, frame_node_));
-  mean_.reset(new rviz::Shape(rviz::Shape::Sphere, scene_manager_, frame_node_));
+  mean_.reset(new rviz::Shape(rviz::Shape::Cone, scene_manager_, frame_node_));
   detection_id_.reset(new TextVisual(scene_manager_, frame_node_, Ogre::Vector3(0, 0, 0)));
 }
 
@@ -117,26 +117,38 @@ void ObjectDetectionVisual::setMessage(const tuw_object_msgs::ObjectWithCovarian
   }
 
   mean_->setPosition(position);
-  mean_->setScale(Ogre::Vector3(0.1, 0.1, 0.1));
 
   // traffic cones encode their color in the object
   if (msg->object.shape == tuw_object_msgs::Object::SHAPE_TRAFFIC_CONE)
   {
+    double radius = msg->object.shape_variables[0];
+    mean_->setScale(Ogre::Vector3(radius * 2, radius * 2, radius * 3));
+
+    Ogre::Quaternion up(Ogre::Radian(M_PI / 2), Ogre::Vector3(1, 0, 0));
+    mean_->setOrientation(up);
+
     if (msg->object.shape_variables[1] == 0)
     {
       Ogre::ColourValue coneBlue(0, 0, 1.0, 1.0);
       mean_->setColor(coneBlue);
+      covariance_->setColor(coneBlue);
     }
     else if (msg->object.shape_variables[1] == 1)
     {
       Ogre::ColourValue coneYellow(1.0, 1.0, 0, 1.0);
       mean_->setColor(coneYellow);
+      covariance_->setColor(coneYellow);
     }
     else if (msg->object.shape_variables[1] == 2)
     {
       Ogre::ColourValue coneRed(1.0, 0, 0, 1.0);
       mean_->setColor(coneRed);
+      covariance_->setColor(coneRed);
     }
+  }
+  else
+  {
+    mean_->setScale(Ogre::Vector3(0.1, 0.1, 0.1));
   }
 
   detection_id_->setPosition(position - Ogre::Vector3(0, 0, 0.2));
@@ -196,8 +208,6 @@ void ObjectDetectionVisual::setScale(float scale)
 void ObjectDetectionVisual::setColor(Ogre::ColourValue color)
 {
   pose_->setColor(color);
-  // mean_->setColor(color);
-  covariance_->setColor(color);
   detection_id_->setColor(color);
   color_ = color;
 }
