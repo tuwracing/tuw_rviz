@@ -30,6 +30,7 @@
  *   POSSIBILITY OF SUCH DAMAGE.                                           *
  ***************************************************************************/
 
+#include <math.h>
 #include <ros/ros.h>
 
 #include <OGRE/OgreMatrix3.h>
@@ -72,6 +73,20 @@ void ObjectWithCovarianceVisual::setMessage(const tuw_object_msgs::ObjectWithCov
 {
   Ogre::Vector3 position =
       Ogre::Vector3(msg->object.pose.position.x, msg->object.pose.position.y, msg->object.pose.position.z);
+
+  if (std::isnan(position.x))
+  {
+    ROS_WARN("position.x is NaN");
+  }
+  if (std::isnan(position.y))
+  {
+    ROS_WARN("position.y is NaN");
+  }
+  if (std::isnan(position.z))
+  {
+    ROS_WARN("position.z is NaN");
+  }
+
   position = transform_ * position;
   position.z = 0;  // fix on ground z=0
 
