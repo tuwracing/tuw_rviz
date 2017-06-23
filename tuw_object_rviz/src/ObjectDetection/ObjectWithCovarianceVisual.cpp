@@ -160,6 +160,13 @@ void ObjectWithCovarianceVisual::setMessage(const tuw_object_msgs::ObjectWithCov
       mean_->setColor(coneRed);
       covariance_->setColor(coneRed);
     }
+    else
+    {
+      // assume color is unknown
+      Ogre::ColourValue coneUnknownGray(0.5, 0.5, 0.5, 0.5);
+      mean_->setColor(coneUnknownGray);
+      covariance_->setColor(coneUnknownGray);
+    }
   }
   else
   {
