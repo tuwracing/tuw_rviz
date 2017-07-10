@@ -92,15 +92,23 @@ void ObjectWithCovarianceVisual::setMessage(const tuw_object_msgs::ObjectWithCov
 
   Ogre::Vector3 vel = Ogre::Vector3(msg->object.twist.linear.x, msg->object.twist.linear.y, msg->object.twist.linear.z);
 
-  Ogre::Quaternion orientation = Ogre::Quaternion(msg->object.pose.orientation.w, msg->object.pose.orientation.x,
-                                                  msg->object.pose.orientation.y, msg->object.pose.orientation.z);
+  Ogre::Quaternion orientation = Ogre::Quaternion(msg->object.pose.orientation.w,
+                                                  msg->object.pose.orientation.x,
+                                                  msg->object.pose.orientation.y,
+                                                  msg->object.pose.orientation.z);
 
   if (msg->covariance_pose.size() == 9)
   {
     covariance_->setVisible(true);
-    Ogre::Matrix3 C = Ogre::Matrix3(msg->covariance_pose[0], msg->covariance_pose[1], msg->covariance_pose[2],
-                                    msg->covariance_pose[3], msg->covariance_pose[4], msg->covariance_pose[5],
-                                    msg->covariance_pose[6], msg->covariance_pose[7], msg->covariance_pose[8]);
+    Ogre::Matrix3 C = Ogre::Matrix3(msg->covariance_pose[0],
+                                    msg->covariance_pose[1],
+                                    msg->covariance_pose[2],
+                                    msg->covariance_pose[3],
+                                    msg->covariance_pose[4],
+                                    msg->covariance_pose[5],
+                                    msg->covariance_pose[6],
+                                    msg->covariance_pose[7],
+                                    msg->covariance_pose[8]);
 
     // rotate covariance matrix in right coordinates
     // cov(Ax) = A * cov(x) * AT
@@ -144,17 +152,23 @@ void ObjectWithCovarianceVisual::setMessage(const tuw_object_msgs::ObjectWithCov
 
     if (msg->object.shape_variables[1] == 0)
     {
+      Ogre::ColourValue coneUnknownGray(0.5, 0.5, 0.5, 0.75);
+      mean_->setColor(coneUnknownGray);
+      covariance_->setColor(coneUnknownGray);
+    }
+    else if (msg->object.shape_variables[1] == 1)
+    {
       Ogre::ColourValue coneBlue(0, 0, 1.0, 1.0);
       mean_->setColor(coneBlue);
       covariance_->setColor(coneBlue);
     }
-    else if (msg->object.shape_variables[1] == 1)
+    else if (msg->object.shape_variables[1] == 2)
     {
       Ogre::ColourValue coneYellow(1.0, 1.0, 0, 1.0);
       mean_->setColor(coneYellow);
       covariance_->setColor(coneYellow);
     }
-    else if (msg->object.shape_variables[1] == 2)
+    else if (msg->object.shape_variables[1] == 3)
     {
       Ogre::ColourValue coneRed(1.0, 0, 0, 1.0);
       mean_->setColor(coneRed);
@@ -162,10 +176,7 @@ void ObjectWithCovarianceVisual::setMessage(const tuw_object_msgs::ObjectWithCov
     }
     else
     {
-      // assume color is unknown
-      Ogre::ColourValue coneUnknownGray(0.5, 0.5, 0.5, 0.5);
-      mean_->setColor(coneUnknownGray);
-      covariance_->setColor(coneUnknownGray);
+      ROS_WARN("Unknown cone color %.1f", msg->object.shape_variables[1]);
     }
   }
   else
