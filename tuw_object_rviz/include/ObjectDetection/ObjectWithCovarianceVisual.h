@@ -105,6 +105,9 @@ private:
 
   boost::shared_ptr< CovarianceVisual > covariance_;
 
+  // the object that can be used to show category color even though color is part of the detection
+  boost::shared_ptr< rviz::Shape > category_;
+
   boost::shared_ptr< TextVisual > detection_id_;
 
 protected:

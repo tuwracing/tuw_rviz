@@ -56,7 +56,8 @@ ObjectWithCovarianceVisual::ObjectWithCovarianceVisual(Ogre::SceneManager* scene
   frame_node_ = parent_node->createChildSceneNode();
 
   // We create the visual objects within the frame node so that we can
-  // set thier position and direction relative to their header frame.
+  // set their position and direction relative to their header frame.
+  category_.reset(new rviz::Shape(rviz::Shape::Cylinder, scene_manager_, frame_node_));
   pose_.reset(new rviz::Arrow(scene_manager_, frame_node_));
   covariance_.reset(new ProbabilityEllipseCovarianceVisual(scene_manager_, frame_node_));
   mean_.reset(new rviz::Shape(rviz::Shape::Cone, scene_manager_, frame_node_));
@@ -145,16 +146,17 @@ void ObjectWithCovarianceVisual::setMessage(const tuw_object_msgs::ObjectWithCov
   if (msg->object.shape == tuw_object_msgs::Object::SHAPE_TRAFFIC_CONE)
   {
     double radius = msg->object.shape_variables[0];
-    mean_->setScale(Ogre::Vector3(radius * 2, radius * 2, radius * 3));
+    mean_->setScale(Ogre::Vector3(radius * 2, 0.325, radius * 2));
+    category_->setScale(Ogre::Vector3(radius * 2.5, 0.1, radius * 2.5));
 
     Ogre::Quaternion up(Ogre::Radian(M_PI / 2), Ogre::Vector3(1, 0, 0));
     mean_->setOrientation(up);
 
     if (msg->object.shape_variables[1] == 0)
     {
-      Ogre::ColourValue coneUnknownGray(0.5, 0.5, 0.5, 0.75);
-      mean_->setColor(coneUnknownGray);
-      covariance_->setColor(coneUnknownGray);
+      Ogre::ColourValue coneUnknownWhite(1, 1, 1, 0.8);
+      mean_->setColor(coneUnknownWhite);
+      covariance_->setColor(coneUnknownWhite);
     }
     else if (msg->object.shape_variables[1] == 1)
     {
@@ -233,6 +235,7 @@ void ObjectWithCovarianceVisual::setScale(float scale)
 {
   pose_->setScale(Ogre::Vector3(scale, scale, scale));
   mean_->setScale(Ogre::Vector3(scale, scale, scale));
+  category_->setScale(Ogre::Vector3(scale, scale, scale));
   covariance_->setLineWidth(scale);
   scale_ = scale;
 }
@@ -241,6 +244,7 @@ void ObjectWithCovarianceVisual::setScale(float scale)
 void ObjectWithCovarianceVisual::setColor(Ogre::ColourValue color)
 {
   pose_->setColor(color);
+  category_->setColor(color);
   detection_id_->setColor(color);
   color_ = color;
 }
