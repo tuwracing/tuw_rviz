@@ -40,10 +40,9 @@
 
 #include "ObjectDetection/ObjectWithCovarianceVisual.h"
 
-namespace tuw_object_rviz
-{
-ObjectWithCovarianceVisual::ObjectWithCovarianceVisual(Ogre::SceneManager* scene_manager, Ogre::SceneNode* parent_node)
-{
+namespace tuw_object_rviz {
+ObjectWithCovarianceVisual::ObjectWithCovarianceVisual(
+    Ogre::SceneManager *scene_manager, Ogre::SceneNode *parent_node) {
   scene_manager_ = scene_manager;
 
   // Ogre::SceneNode s form a tree, with each node storing the
@@ -51,65 +50,63 @@ ObjectWithCovarianceVisual::ObjectWithCovarianceVisual(Ogre::SceneManager* scene
   // parent.  Ogre does the math of combining those transforms when it
   // is time to render.
   //
-  // Here we create a node to store the pose of the MarkerDetection's header frame
+  // Here we create a node to store the pose of the MarkerDetection's header
+  // frame
   // relative to the RViz fixed frame.
   frame_node_ = parent_node->createChildSceneNode();
 
   // We create the visual objects within the frame node so that we can
   // set their position and direction relative to their header frame.
-  category_.reset(new rviz::Shape(rviz::Shape::Cylinder, scene_manager_, frame_node_));
+  category_.reset(
+      new rviz::Shape(rviz::Shape::Cylinder, scene_manager_, frame_node_));
   pose_.reset(new rviz::Arrow(scene_manager_, frame_node_));
-  covariance_.reset(new ProbabilityEllipseCovarianceVisual(scene_manager_, frame_node_));
+  covariance_.reset(
+      new ProbabilityEllipseCovarianceVisual(scene_manager_, frame_node_));
   mean_.reset(new rviz::Shape(rviz::Shape::Cone, scene_manager_, frame_node_));
-  detection_id_.reset(new TextVisual(scene_manager_, frame_node_, Ogre::Vector3(0, 0, 0)));
+  detection_id_.reset(
+      new TextVisual(scene_manager_, frame_node_, Ogre::Vector3(0, 0, 0)));
 }
 
-ObjectWithCovarianceVisual::~ObjectWithCovarianceVisual()
-{
+ObjectWithCovarianceVisual::~ObjectWithCovarianceVisual() {
   // Destroy the frame node since we don't need it anymore.
   scene_manager_->destroySceneNode(frame_node_);
 }
 
-void ObjectWithCovarianceVisual::setMessage(const tuw_object_msgs::ObjectWithCovariance::ConstPtr& msg)
-{
+void ObjectWithCovarianceVisual::setMessage(
+    const tuw_object_msgs::ObjectWithCovariance::ConstPtr &msg) {
   Ogre::Vector3 position =
-      Ogre::Vector3(msg->object.pose.position.x, msg->object.pose.position.y, msg->object.pose.position.z);
+      Ogre::Vector3(msg->object.pose.position.x, msg->object.pose.position.y,
+                    msg->object.pose.position.z);
 
-  if (std::isnan(position.x))
-  {
+  if (std::isnan(position.x)) {
     ROS_WARN("position.x is NaN");
   }
-  if (std::isnan(position.y))
-  {
+  if (std::isnan(position.y)) {
     ROS_WARN("position.y is NaN");
   }
-  if (std::isnan(position.z))
-  {
+  if (std::isnan(position.z)) {
     ROS_WARN("position.z is NaN");
   }
 
   position = transform_ * position;
-  position.z = 0;  // fix on ground z=0
+  position.z = 0; // fix on ground z=0
 
-  Ogre::Vector3 vel = Ogre::Vector3(msg->object.twist.linear.x, msg->object.twist.linear.y, msg->object.twist.linear.z);
+  Ogre::Vector3 vel =
+      Ogre::Vector3(msg->object.twist.linear.x, msg->object.twist.linear.y,
+                    msg->object.twist.linear.z);
 
-  Ogre::Quaternion orientation = Ogre::Quaternion(msg->object.pose.orientation.w,
-                                                  msg->object.pose.orientation.x,
-                                                  msg->object.pose.orientation.y,
-                                                  msg->object.pose.orientation.z);
+  Ogre::Quaternion orientation = Ogre::Quaternion(
+      msg->object.pose.orientation.w, msg->object.pose.orientation.x,
+      msg->object.pose.orientation.y, msg->object.pose.orientation.z);
 
-  if (msg->covariance_pose.size() == 9)
-  {
+  if (msg->covariance_pose.size() == 9) {
     covariance_->setVisible(true);
-    Ogre::Matrix3 C = Ogre::Matrix3(msg->covariance_pose[0],
-                                    msg->covariance_pose[1],
-                                    msg->covariance_pose[2],
-                                    msg->covariance_pose[3],
-                                    msg->covariance_pose[4],
-                                    msg->covariance_pose[5],
-                                    msg->covariance_pose[6],
-                                    msg->covariance_pose[7],
-                                    msg->covariance_pose[8]);
+    Ogre::Matrix3 C =
+        Ogre::Matrix3(msg->covariance_pose[0], msg->covariance_pose[1],
+                      msg->covariance_pose[2], msg->covariance_pose[3],
+                      msg->covariance_pose[4], msg->covariance_pose[5],
+                      msg->covariance_pose[6], msg->covariance_pose[7],
+                      msg->covariance_pose[8]);
 
     // rotate covariance matrix in right coordinates
     // cov(Ax) = A * cov(x) * AT
@@ -120,9 +117,7 @@ void ObjectWithCovarianceVisual::setMessage(const tuw_object_msgs::ObjectWithCov
     covariance_->setOrientation(orientation);
     covariance_->setPosition(position);
     covariance_->setMeanCovariance(Ogre::Vector3(0, 0, 0), C);
-  }
-  else
-  {
+  } else {
     covariance_->setVisible(false);
     ROS_WARN("Covariance is not 9x9 won't display");
   }
@@ -131,58 +126,50 @@ void ObjectWithCovarianceVisual::setMessage(const tuw_object_msgs::ObjectWithCov
   pose_->setDirection(vel);
 
   // only show arrow if velocity > 0 (in any direction)
-  if (vel == Ogre::Vector3::ZERO)
-  {
+  if (vel == Ogre::Vector3::ZERO) {
     pose_->getSceneNode()->setVisible(false, true);
-  }
-  else
-  {
+  } else {
     pose_->getSceneNode()->setVisible(true, true);
   }
 
-  mean_->setPosition(position);
+  Ogre::Quaternion up(Ogre::Radian(M_PI / 2), Ogre::Vector3(1, 0, 0));
+
+  Ogre::Vector3 meanPos(position);
+  meanPos.z += 0.1;
+  mean_->setPosition(meanPos);
+
+  Ogre::Vector3 catPos(position);
+  catPos.z -= 0.1;
+  category_->setPosition(catPos);
+  category_->setOrientation(up);
 
   // traffic cones encode their color in the object
-  if (msg->object.shape == tuw_object_msgs::Object::SHAPE_TRAFFIC_CONE)
-  {
+  if (msg->object.shape == tuw_object_msgs::Object::SHAPE_TRAFFIC_CONE) {
     double radius = msg->object.shape_variables[0];
     mean_->setScale(Ogre::Vector3(radius * 2, 0.325, radius * 2));
-    category_->setScale(Ogre::Vector3(radius * 2.5, 0.1, radius * 2.5));
-
-    Ogre::Quaternion up(Ogre::Radian(M_PI / 2), Ogre::Vector3(1, 0, 0));
+    category_->setScale(Ogre::Vector3(radius * 2.5, 0.04, radius * 2.5));
     mean_->setOrientation(up);
 
-    if (msg->object.shape_variables[1] == 0)
-    {
+    if (msg->object.shape_variables[1] == 0) {
       Ogre::ColourValue coneUnknownWhite(1, 1, 1, 0.8);
       mean_->setColor(coneUnknownWhite);
       covariance_->setColor(coneUnknownWhite);
-    }
-    else if (msg->object.shape_variables[1] == 1)
-    {
+    } else if (msg->object.shape_variables[1] == 1) {
       Ogre::ColourValue coneBlue(0, 0, 1.0, 1.0);
       mean_->setColor(coneBlue);
       covariance_->setColor(coneBlue);
-    }
-    else if (msg->object.shape_variables[1] == 2)
-    {
+    } else if (msg->object.shape_variables[1] == 2) {
       Ogre::ColourValue coneYellow(1.0, 1.0, 0, 1.0);
       mean_->setColor(coneYellow);
       covariance_->setColor(coneYellow);
-    }
-    else if (msg->object.shape_variables[1] == 3)
-    {
+    } else if (msg->object.shape_variables[1] == 3) {
       Ogre::ColourValue coneRed(1.0, 0, 0, 1.0);
       mean_->setColor(coneRed);
       covariance_->setColor(coneRed);
-    }
-    else
-    {
+    } else {
       ROS_WARN("Unknown cone color %.1f", msg->object.shape_variables[1]);
     }
-  }
-  else
-  {
+  } else {
     mean_->setScale(Ogre::Vector3(0.1, 0.1, 0.1));
   }
 
@@ -192,20 +179,20 @@ void ObjectWithCovarianceVisual::setMessage(const tuw_object_msgs::ObjectWithCov
   // concatenate ids with confidences as string for display
   // only first two decimal digits are displayed for confidences
   std::string ids = "";
-  std::vector< int >::const_iterator it_ids = msg->object.ids.begin();
-  std::vector< double >::const_iterator it_conf = msg->object.ids_confidence.begin();
+  std::vector<int>::const_iterator it_ids = msg->object.ids.begin();
+  std::vector<double>::const_iterator it_conf =
+      msg->object.ids_confidence.begin();
 
-  for (; (it_ids != msg->object.ids.end()) || (it_conf != msg->object.ids_confidence.end()); it_ids++, it_conf++)
-  {
+  for (; (it_ids != msg->object.ids.end()) ||
+         (it_conf != msg->object.ids_confidence.end());
+       it_ids++, it_conf++) {
     std::string conf = (boost::format("%.2f") % *it_conf).str();
 
-    if (it_ids == (msg->object.ids.end() - 1))
-    {
-      ids += boost::lexical_cast< std::string >(*it_ids) + " (" + conf + ")";
-    }
-    else
-    {
-      ids += boost::lexical_cast< std::string >(*it_ids) + " (" + conf + ")" + ", ";
+    if (it_ids == (msg->object.ids.end() - 1)) {
+      ids += boost::lexical_cast<std::string>(*it_ids) + " (" + conf + ")";
+    } else {
+      ids +=
+          boost::lexical_cast<std::string>(*it_ids) + " (" + conf + ")" + ", ";
     }
   }
 
@@ -213,26 +200,25 @@ void ObjectWithCovarianceVisual::setMessage(const tuw_object_msgs::ObjectWithCov
 }
 
 // Position is passed through to the SceneNode.
-void ObjectWithCovarianceVisual::setFramePosition(const Ogre::Vector3& position)
-{
+void ObjectWithCovarianceVisual::setFramePosition(
+    const Ogre::Vector3 &position) {
   frame_node_->setPosition(position);
 }
 
 // Orientation is passed through to the SceneNode.
-void ObjectWithCovarianceVisual::setFrameOrientation(const Ogre::Quaternion& orientation)
-{
+void ObjectWithCovarianceVisual::setFrameOrientation(
+    const Ogre::Quaternion &orientation) {
   frame_node_->setOrientation(orientation);
 }
 
-void ObjectWithCovarianceVisual::setTransform(const Ogre::Vector3& position, const Ogre::Quaternion& orientation)
-{
+void ObjectWithCovarianceVisual::setTransform(
+    const Ogre::Vector3 &position, const Ogre::Quaternion &orientation) {
   transform_ = Ogre::Matrix4(orientation);
   transform_.setTrans(position);
 }
 
 // Scale is passed through to the pose Shape object.
-void ObjectWithCovarianceVisual::setScale(float scale)
-{
+void ObjectWithCovarianceVisual::setScale(float scale) {
   pose_->setScale(Ogre::Vector3(scale, scale, scale));
   mean_->setScale(Ogre::Vector3(scale, scale, scale));
   category_->setScale(Ogre::Vector3(scale, scale, scale));
@@ -241,22 +227,20 @@ void ObjectWithCovarianceVisual::setScale(float scale)
 }
 
 // Color is passed through to the pose Shape object.
-void ObjectWithCovarianceVisual::setColor(Ogre::ColourValue color)
-{
+void ObjectWithCovarianceVisual::setColor(Ogre::ColourValue color) {
   pose_->setColor(color);
   category_->setColor(color);
   detection_id_->setColor(color);
   color_ = color;
 }
 
-void ObjectWithCovarianceVisual::setVisiblities(bool render_covariance, bool render_id, bool render_sensor_type)
-{
+void ObjectWithCovarianceVisual::setVisiblities(bool render_covariance,
+                                                bool render_id,
+                                                bool render_sensor_type) {
   covariance_->setVisible(render_covariance);
   detection_id_->setVisible(render_id);
 }
 
-void ObjectWithCovarianceVisual::setStyle(Styles style)
-{
-}
+void ObjectWithCovarianceVisual::setStyle(Styles style) {}
 
-}  // end namespace marker_rviz
+} // end namespace marker_rviz
