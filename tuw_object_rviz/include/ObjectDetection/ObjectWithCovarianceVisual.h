@@ -39,6 +39,7 @@
 #include <rviz/ogre_helpers/arrow.h>
 #include <rviz/ogre_helpers/shape.h>
 #include <tuw_object_msgs/ObjectWithCovariance.h>
+#include <boost/format.hpp>
 
 namespace Ogre
 {

@@ -15,6 +15,14 @@
     </description>
     <message_type>tuw_nav_msgs/RouteSegments</message_type>
   </class>
+  <class name="tuw_nav_rviz/Track"
+         type="tuw_nav_rviz::TrackDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays Track
+    </description>
+    <message_type>tuw_nav_msgs/Track</message_type>
+  </class>
   <class name="tuw_nav_rviz/Path"
          type="tuw_nav_rviz::PathDisplay"
          base_class_type="rviz::Display">

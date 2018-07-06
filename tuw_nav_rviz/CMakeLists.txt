@@ -162,6 +162,11 @@ add_library(${PROJECT_NAME}
   src/Path/PathVisual.cpp
   src/Path/PathDisplay.cpp
   
+  include/Track/TrackVisual.h
+  include/Track/TrackDisplay.h
+  src/Track/TrackVisual.cpp
+  src/Track/TrackDisplay.cpp
+  
   include/PathVec/PathVecDisplay.h
   src/PathVec/PathVecDisplay.cpp
 )
