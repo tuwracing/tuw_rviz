@@ -150,19 +150,20 @@ void ObjectWithCovarianceVisual::setMessage(
     category_->setScale(Ogre::Vector3(radius * 2.5, 0.04, radius * 2.5));
     mean_->setOrientation(up);
 
-    if (msg->object.shape_variables[1] == 0) {
+    long shape_class = std::lround(msg->object.shape_variables[1]);
+    if (shape_class == 0) {
       Ogre::ColourValue coneUnknownWhite(1, 1, 1, 0.8);
       mean_->setColor(coneUnknownWhite);
       covariance_->setColor(coneUnknownWhite);
-    } else if (msg->object.shape_variables[1] == 1) {
+    } else if (shape_class == 1) {
       Ogre::ColourValue coneBlue(0, 0, 1.0, 1.0);
       mean_->setColor(coneBlue);
       covariance_->setColor(coneBlue);
-    } else if (msg->object.shape_variables[1] == 2) {
+    } else if (shape_class == 2) {
       Ogre::ColourValue coneYellow(1.0, 1.0, 0, 1.0);
       mean_->setColor(coneYellow);
       covariance_->setColor(coneYellow);
-    } else if (msg->object.shape_variables[1] == 3) {
+    } else if (shape_class == 3) {
       Ogre::ColourValue coneRed(1.0, 0, 0, 1.0);
       mean_->setColor(coneRed);
       covariance_->setColor(coneRed);
@@ -178,25 +179,25 @@ void ObjectWithCovarianceVisual::setMessage(
 
   // concatenate ids with confidences as string for display
   // only first two decimal digits are displayed for confidences
-  std::string ids = "";
-  std::vector<int>::const_iterator it_ids = msg->object.ids.begin();
-  std::vector<double>::const_iterator it_conf =
-      msg->object.ids_confidence.begin();
+  // std::string ids = "";
+  // std::vector<int>::const_iterator it_ids = msg->object.ids.begin();
+  // std::vector<double>::const_iterator it_conf =
+  //     msg->object.ids_confidence.begin();
 
-  for (; (it_ids != msg->object.ids.end()) ||
-         (it_conf != msg->object.ids_confidence.end());
-       it_ids++, it_conf++) {
-    std::string conf = (boost::format("%.2f") % *it_conf).str();
+  // for (; (it_ids != msg->object.ids.end()) ||
+  //        (it_conf != msg->object.ids_confidence.end());
+  //      it_ids++, it_conf++) {
+  //   std::string conf = (boost::format("%.2f") % *it_conf).str();
 
-    if (it_ids == (msg->object.ids.end() - 1)) {
-      ids += boost::lexical_cast<std::string>(*it_ids) + " (" + conf + ")";
-    } else {
-      ids +=
-          boost::lexical_cast<std::string>(*it_ids) + " (" + conf + ")" + ", ";
-    }
-  }
+  //   if (it_ids == (msg->object.ids.end() - 1)) {
+  //     ids += boost::lexical_cast<std::string>(*it_ids) + " (" + conf + ")";
+  //   } else {
+  //     ids +=
+  //         boost::lexical_cast<std::string>(*it_ids) + " (" + conf + ")" + ", ";
+  //   }
+  // }
 
-  detection_id_->setCaption(ids);
+  detection_id_->setCaption("c");
 }
 
 // Position is passed through to the SceneNode.
